@@ -64,11 +64,11 @@ const superComplexQuery = L`
     complexQuery
   }), q2 as (${
     complexQuery
-  }), q3 as ${
+  }), q3 as (${
     complexQuery
-  } select 1
+  }) select 1
 `;
-// => text: WITH q1 as(SELECT name, age FROM people WHERE name = $1), q2 as (SELECT name, age FROM people WHERE name = $2), q3 as SELECT name, age FROM people WHERE name = $3 select 1
+// => text: WITH q1 as(SELECT name, age FROM people WHERE name = $1), q2 as (SELECT name, age FROM people WHERE name = $2), q3 as (SELECT name, age FROM people WHERE name = $3) select 1
 // => values: [ 'Andrew', 'Andrew', 'Andrew' ]
 
 ```
@@ -146,7 +146,10 @@ const complexQuery = L`SELECT ${
   L`people`
 } WHERE name = ${
   'Andrew'
-}`; // => text: 'SELECT name, surname FROM my_table WHERE name = $0'
+}`;
+// => text: SELECT name, age FROM people WHERE name = $0
+// => sql: SELECT name, age FROM people WHERE name = ?
+// => values: [ 'Andrew' ]
 
 const superComplexQuery = L`
   WITH q1 as(${

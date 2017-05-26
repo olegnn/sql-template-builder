@@ -63,13 +63,17 @@ const fullQuery = L`
 // => text: WITH me AS (SELECT * FROM people where name = $1), my_friends AS (SELECT * FROM people where name = ANY($2))  SELECT name, (SELECT count(*) from my_friends) as friend_count FROM me
 // => sql: WITH me AS (SELECT * FROM people where name = ?), my_friends AS (SELECT * FROM people where name = ANY(?))  SELECT name, (SELECT count(*) from my_friends) as friend_count FROM me
 // => values: [ 'Andrew', [ 'Peter', 'Wendi' ] ]
+
 const complexQuery = L`SELECT ${
   L`name, age`
 } FROM ${
   L`people`
 } WHERE name = ${
   'Andrew'
-}`; // => text: 'SELECT name, surname FROM my_table WHERE name = $0'
+}`;
+// => text: SELECT name, age FROM people WHERE name = $0
+// => sql: SELECT name, age FROM people WHERE name = ?
+// => values: [ 'Andrew' ]
 
 const superComplexQuery = L`
   WITH q1 as(${

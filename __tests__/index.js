@@ -50,9 +50,9 @@ describe('sql-query', () => {
   });
   it('creates nested query using rest parameters', () => {
     /**
-     * @todo check it normaly, i suppose it should work
-     * @todo rethink (maybe) principes of nested query building
-     * instead of using rest operator it seems like ther's so much
+     * @todo check it normally, i suppose it should work
+     * @todo rethink (maybe) principles of nested query building
+     * instead of using rest operator, it seems like ther's so much
      * better solution
      */
     const data =

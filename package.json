@@ -1,7 +1,7 @@
 {
   "autor": "Oleg Nosov <olegnosov1@gmail.com>",
   "name": "sql-template-builder",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "./dist/index.js",
   "engines": {
     "node": ">=4.0.0"

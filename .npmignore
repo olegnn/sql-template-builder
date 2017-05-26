@@ -1,0 +1,8 @@
+.travis.yml
+__tests__
+examples
+.DS_Store
+.eslintrc
+.eslintignore
+gulpfile.js
+yarn.lock

@@ -1,8 +1,15 @@
 {
   "autor": "Oleg Nosov <olegnosov1@gmail.com>",
   "name": "sql-template-builder",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "main": "./dist/index.js",
+  "engines": {
+    "node": ">=4.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/olegnn/sql-template-builder"
+  },
   "devDependencies": {
     "babel-cli": "^6.14.0",
     "babel-core": "^6.11.4",

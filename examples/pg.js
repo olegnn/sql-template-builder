@@ -27,8 +27,8 @@ const data = [
 const insertStatement = L`
   INSERT INTO ${tableName} VALUES ${L(...data.map(row => L`(${L(...row)})`))}
 `;
-// => sql: INSERT INTO people VALUES (?,?),(?,?),(?,?)
 // => text: INSERT INTO people VALUES ($1,$2),($3,$4),($5,$6)
+// => sql: INSERT INTO people VALUES (?,?),(?,?),(?,?)
 // => values: [ 'Peter', '25', 'Wendy', '24', 'Andrew', '32' ]
 
 // Lazy evaluated :)

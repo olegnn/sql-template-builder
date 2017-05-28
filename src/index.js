@@ -11,11 +11,13 @@ import Symbol from 'es6-symbol';
 const MEMBERS = {
   PARTS: Symbol('PARTS'),
   DATA: Symbol('DATA'),
+  NAME: Symbol('NAME'),
   DELIMITER: Symbol('DELIMITER'),
   GET_TEXT: Symbol('GET_TEXT'),
   GET_VALUES: Symbol('GET_VALUES'),
   GET_QUERIES_FROM_VALUE: Symbol('GET_QUERIES_FROM_VALUE'),
-  EXTRACT_VALUE: Symbol('EXTRACT_VALUE'),
+  EXTRACT_LAZY_VALUE: Symbol('EXTRACT_LAZY_VALUE'),
+  BUILD_TEMPLATE: Symbol('BUILD_TEMPLATE'),
   USE_VALUE_OR_THIS: Symbol('USE_VALUE_OR_THIS'),
 };
 
@@ -26,31 +28,21 @@ const TEMPLATE_ARGS = {
 
 export class SQLQuery {
 
-  [MEMBERS.EXTRACT_VALUE](value) {
-    if (
-      value
-      && typeof value === 'object'
-      && !(value instanceof SQLQuery)
-      && !Array.isArray(value)
-    ) throw new TypeError(
-      `Value ${
-        value
-      } has incorrect type!\
-      You must provide primitive value or Query instance or array of them.`,
-    );
+  [MEMBERS.EXTRACT_LAZY_VALUE](value) {
     if (typeof value === 'function')
       return value(this);
     else return value;
   }
 
-  [MEMBERS.USE_VALUE_OR_THIS](value) {
+  [MEMBERS.USE_VALUE_OR_THIS](maybeLazyValue) {
+    const value = this[MEMBERS.EXTRACT_LAZY_VALUE](maybeLazyValue);
     return value instanceof SQLQuery
            ? value
            : this;
   }
 
   [MEMBERS.GET_QUERIES_FROM_VALUE](maybeLazyValue, prev = null) {
-    const value = this[MEMBERS.EXTRACT_VALUE](maybeLazyValue);
+    const value = this[MEMBERS.EXTRACT_LAZY_VALUE](maybeLazyValue);
     if (Array.isArray(value))
       return (
           value
@@ -74,73 +66,85 @@ export class SQLQuery {
   [MEMBERS.GET_VALUES](values) {
     return (
       values.reduce(
-        (acc, value) => {
+        (acc, maybeLazyValue) => {
+          const value = this[MEMBERS.EXTRACT_LAZY_VALUE](maybeLazyValue);
           if (value instanceof SQLQuery) {
-            return [...acc, ...value[MEMBERS.GET_VALUES](value.values)];
-          } else
-            if (Array.isArray(value)) {
-              let isPreviousQuery = true;
-              return [
-                ...acc,
-                ...value.reduce(
-                  (valueAcc, valueMember) => {
+            return [...acc, ...value.values];
+          } else if (Array.isArray(value)) {
+            let isPreviousQuery = true;
+            return [
+              ...acc,
+              ...value.reduce(
+                  (valueAcc, maybeLazyValueMember) => {
+                    const valueMember = this[
+                      MEMBERS.EXTRACT_LAZY_VALUE
+                    ](maybeLazyValueMember);
                     if (valueMember instanceof SQLQuery) {
                       isPreviousQuery = true;
                       return [
                         ...valueAcc,
-                        ...valueMember[MEMBERS.GET_VALUES](
-                          valueMember.values,
-                        ),
+                        ...valueMember.values,
                       ];
-                    } else
-                      if (!isPreviousQuery) {
-                        return [
-                          ...valueAcc.slice(0, -1),
-                          [
-                            ...valueAcc.slice(-1)[0],
-                            this[MEMBERS.EXTRACT_VALUE](valueMember),
-                          ],
-                        ];
-                      } else {
-                        isPreviousQuery = false;
-                        return [
-                          ...valueAcc,
-                          [this[MEMBERS.EXTRACT_VALUE](valueMember)],
-                        ];
-                      }
+                    } else if (!isPreviousQuery) {
+                      return [
+                        ...valueAcc.slice(0, -1),
+                        [
+                          ...valueAcc.slice(-1)[0],
+                          valueMember,
+                        ],
+                      ];
+                    } else {
+                      isPreviousQuery = false;
+                      return [
+                        ...valueAcc,
+                        [valueMember],
+                      ];
+                    }
                   }
                 , []),
-              ];
-            }
-          return [...acc, this[MEMBERS.EXTRACT_VALUE](value)];
+            ];
+          }
+          return [...acc, value];
         }
       , [])
     );
+  }
+
+  [MEMBERS.BUILD_TEMPLATE](templateArg, index) {
+    switch (templateArg) {
+      case TEMPLATE_ARGS.DOLLAR:
+        return `$${index}`;
+      case TEMPLATE_ARGS.QUESTION:
+        return '?';
+      default:
+        return templateArg;
+    }
   }
 
   [MEMBERS.GET_TEXT](parts, data, templateArg, previousLength = 1) {
     let currentLength = previousLength;
     return parts.reduce(
       (acc, part, index) => {
+        const value = this[MEMBERS.EXTRACT_LAZY_VALUE](data[index]);
         const nestedQueries =
           this[
             MEMBERS.USE_VALUE_OR_THIS
-          ](data[index])[
+          ](value)[
             MEMBERS.GET_QUERIES_FROM_VALUE
-          ](data[index]);
-        if (nestedQueries.length) {
+          ](value);
+        if (nestedQueries.length)
           return `${
             acc
           }${
             part
           }${
             nestedQueries
-            ? nestedQueries.map(
+              .map(
                 ({ query, prev }, index) => {
                   const delimiter =
                     prev !== null
                     && prev === nestedQueries[index - 1]
-                    ? this[MEMBERS.DELIMITER]
+                    ? this[MEMBERS.EXTRACT_LAZY_VALUE](this[MEMBERS.DELIMITER])
                     : '';
                   const res = `${
                     delimiter
@@ -153,35 +157,42 @@ export class SQLQuery {
                     )
                   }`;
                   currentLength +=
-                    query[MEMBERS.GET_VALUES](query.values).length;
+                    query
+                      .values
+                      .length;
                   return res;
                 },
-            ).join('')
-            : ''
+              )
+              .join('')
           }`;
-        } else
-          if (typeof data[index] !== 'undefined') {
-            const template =
-              templateArg === TEMPLATE_ARGS.DOLLAR
-              ? `$${currentLength}`
-              : '?';
-            currentLength++;
-            return `${
-              acc
-            }${
-              part
-            }${
-              template
-            }`;
-          } else {
-            return `${
-              acc
-            }${
-              part
-            }`;
-          }
+        else
+          return (
+            typeof value !== 'undefined'
+            ? `${
+                acc
+              }${
+                part
+              }${
+                this[MEMBERS.BUILD_TEMPLATE](templateArg, currentLength++)
+              }`
+           :  `${
+                acc
+              }${
+                part
+              }`
+          );
       }
     , '');
+  }
+
+  joinBy(delimiter) {
+    this[MEMBERS.DELIMITER] = delimiter;
+    return this;
+  }
+
+  setName(name) {
+    this[MEMBERS.NAME] = name;
+    return this;
   }
 
   constructor(parts, data, delimiter = '') {
@@ -210,6 +221,10 @@ export class SQLQuery {
     return this[MEMBERS.GET_VALUES](this[MEMBERS.DATA]);
   }
 
+  get name() {
+    return this[MEMBERS.EXTRACT_LAZY_VALUE](this[MEMBERS.NAME]);
+  }
+
   toString() {
     return this.text;
   }
@@ -227,9 +242,11 @@ export default function createSQLTemplateQuery(...params) {
       /*
        * So, function is used as tag
        */
-      return new SQLQuery([...firstParam], params.slice(1));
+      return new SQLQuery(firstParam, params.slice(1));
     }
-  return new SQLQuery(Array.from(params, (_, i) => i ? ',': ''), params);
+  return new SQLQuery(
+    Array.from(params, (_, i) => i ? ',' : ''), params,
+  );
 }
 
 createSQLTemplateQuery.raw = value =>

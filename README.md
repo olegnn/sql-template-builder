@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/olegnn/sql-template-builder.svg?branch=master)](https://travis-ci.org/olegnn/sql-template-builder)
 [![npm](https://img.shields.io/npm/v/sql-template-builder.svg)](https://www.npmjs.com/package/sql-template-builder)
+[![npm](https://img.shields.io/npm/dm/sql-template-builder.svg)](https://www.npmjs.com/package/sql-template-builder)
 [![node](https://img.shields.io/node/v/sql-template-builder.svg)](https://nodejs.org)
 
 ### Original idea: [node-sql-template-strings](https://github.com/felixfbecker/node-sql-template-strings)
@@ -35,11 +36,47 @@ const withQuery = SQL`WITH my_select AS (`.append(query).append(') SELECT * FROM
 // :C
 ```
 So, i'll try to help you solve this problem by using crazy template literal combinations.
-## Example usage
+
+## API and usage
+
+- L\`(You statements here)\` - create SQLQuery
+- L(...[any]) - create SQLQuery statement from other queries or values joined by ','
+- L([SQLQuery]).joinBy(string) - create SQLQuery as statement joined from passed queries with %joinByArgument% as delimiter
+- L.raw(string) - create SQLQuery from raw value (Be careful, use escape functions!)
+- query.joinBy(string) - set string to be used to join top-level statements
+- query.setName(string) - set prepared statement name (for pg)
+- query.text - get template text for pg query
+- query.sql - get template text for sql query
+- query.values - get values for query
+
+
+```javascript
+import L from 'sql-template-builder';
+
+const tableName = L`my_table`;
+// Or you could pass raw value (Be careful and use escape functions in this case!)
+const rawTableName = L.raw('my_table_1');
+
+const conditions = [
+  L`a = b`,
+  L`c = d`,
+  L`e = f`
+];
+
+const conditionQuery = L(conditions).joinBy(' AND '); // It will join all statements by ' AND '
+
+const prepared = L`SELECT * FROM ${tableName} LEFT OUTER JOIN ${rawTableName} ON(${conditionQuery})`.setName('my_statement');
+
+// Do something like this
+pg.query(prepared);
+
+```
+
+## Examples
 If you like template strings and crazy things, you are welcome.
 ```javascript
 
-// So' let's start from simple query
+// So, let's start from simple query
 import L from 'sql-template-builder';
 
 const query = L`SELECT * from my_table`;
@@ -73,7 +110,7 @@ const superComplexQuery = L`
 
 ```
 But sorry, that were so simple things. I hope you didn't fall asleep.
-Time to build some dynamic query system, yep? Oh, i forgot to say, all values are lazy evaluated, so you can pass function, which will be called with parent SQLQuery as param.
+Time to build some dynamic query system, yep?
 ```javascript
 import pg from 'pg';
 import L from 'sql-template-builder';
@@ -161,10 +198,10 @@ const superComplexQuery = L`
   }) select 1
 `;
 
-const makeQuery = async query =>
+const makeQuery = query => async () =>
   void console.log(await pool.query(query));
 
-makeQuery(createQuery)
+makeQuery(createQuery)()
   .then(
     makeQuery(insertStatement),
   )
@@ -175,5 +212,6 @@ makeQuery(createQuery)
     makeQuery(fullQuery),
   )
   .catch(console.log.bind(console, ':C'));
+
 ```
-More examples in tests :)
+More examples in tests

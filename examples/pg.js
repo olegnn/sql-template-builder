@@ -85,10 +85,10 @@ const superComplexQuery = L`
   }) select 1
 `;
 
-const makeQuery = async query =>
+const makeQuery = query => async () =>
   void console.log(await pool.query(query));
 
-makeQuery(createQuery)
+makeQuery(createQuery)()
   .then(
     makeQuery(insertStatement),
   )

@@ -33,13 +33,13 @@ describe('sql-query', () => {
     const data =
       Array.from({ length: 5 }, () => Array.from({ length: 5 }, Math.random));
     const prepared = L`INSERT INTO randoms VALUES ${
-      data.map(
-        (v, i) =>
-          L`(${
-            L(...v)
-          })${
-            data.length - i - 1 ? L`,`: L``
-          }`)
+      L(
+        ...data.map(
+          v =>
+            L`(${
+              L(...v)
+            })`),
+      )
     }`;
     expect(prepared.text).toBe(
       'INSERT INTO randoms VALUES ($1,$2,$3,$4,$5),($6,$7,$8,$9,$10),\
@@ -66,5 +66,39 @@ describe('sql-query', () => {
     );
     expect(prepared.values)
       .toEqual(data.reduce((acc, cur) => [...acc, ...cur], []));
+  });
+  it('uses lazy evaluated statements', () => {
+    const getName = () => 'hey';
+    expect(
+      L`SELECT * FROM people WHERE name = ${getName}`.values,
+    ).toEqual(['hey']);
+  });
+  it('creates query with statements joined by ","', () => {
+    const statements = [
+      L`a`,
+      L`b`,
+      L`c`,
+      L`d`,
+    ];
+    const prepared = L(...statements);
+    expect(prepared.text).toBe('a,b,c,d');
+  });
+  it('creates query with statements joined by "+"', () => {
+    const statements = [
+      L`a`,
+      L`b`,
+      L`c`,
+      L`d`,
+    ];
+    const prepared = L(statements);
+    prepared.joinBy('+');
+    expect(prepared.text).toBe('a+b+c+d');
+  });
+  it('creates named prepared statement', () => {
+    const name = 'select_from_my_table';
+    const prepared = L`
+      SELECT * FROM ${L.raw('my_table')}
+    `.setName(name);
+    expect(prepared.name).toBe(name);
   });
 });

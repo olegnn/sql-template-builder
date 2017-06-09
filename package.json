@@ -1,8 +1,14 @@
 {
   "author": "Oleg Nosov <olegnosov1@gmail.com>",
   "name": "sql-template-builder",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "main": "./dist/index.js",
+  "keywords": [
+    "sql",
+    "query",
+    "template",
+    "builder"
+  ],
   "engines": {
     "node": ">=4.0.0"
   },

@@ -1,8 +1,8 @@
 {
   "author": "Oleg Nosov <olegnosov1@gmail.com>",
   "name": "sql-template-builder",
-  "version": "0.0.9",
-  "main": "./dist/index.js",
+  "version": "0.1.1",
+  "main": "./index.js",
   "keywords": [
     "sql",
     "query",
@@ -18,39 +18,21 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "babel-cli": "^6.14.0",
-    "babel-core": "^6.11.4",
-    "babel-eslint": "^7.2.3",
-    "babel-jest": "^20.0.3",
-    "babel-loader": "^7.0.0",
-    "babel-plugin-add-module-exports": "^0.2.1",
-    "babel-plugin-react-transform": "^2.0.2",
-    "babel-plugin-transform-es2015-modules-umd": "^6.24.1",
-    "babel-plugin-transform-es5-property-mutators": "^6.22.0",
-    "babel-plugin-transform-object-rest-spread": "^6.23.0",
-    "babel-plugin-transform-runtime": "^6.12.0",
-    "babel-preset-env": "^1.1.11",
-    "babel-watch": "^2.0.6",
-    "eslint": "^3.19.0",
-    "eslint-config-airbnb": "^15.0.1",
-    "eslint-loader": "^1.5.0",
-    "eslint-plugin-import": "^2.3.0",
-    "eslint-plugin-jsdoc": "^3.1.0",
-    "eslint-plugin-jsx-a11y": "^5.0.3",
-    "eslint-plugin-react": "^7.0.1",
-    "gulp": "^3.9.1",
-    "gulp-babel": "^6.1.2",
-    "jest-cli": "^20.0.4",
+    "jest": "^24.0.0",
+    "nodemon": "^1.18.9",
     "pg": "^6.2.3"
   },
   "scripts": {
-    "develop": "babel-watch ./src/index.js",
-    "production": "babel-node .",
+    "develop": "nodemon ./src/index.js",
+    "production": "node .",
     "test": "jest ./__tests__/*",
-    "build": "gulp build",
-    "prepublish": "yarn test && yarn build"
+    "prepublish": "yarn test"
   },
   "dependencies": {
     "es6-symbol": "^3.1.1"
+  },
+  "jest": {
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true
   }
 }

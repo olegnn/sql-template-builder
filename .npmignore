@@ -4,5 +4,7 @@ examples
 .DS_Store
 .eslintrc
 .eslintignore
-gulpfile.js
 yarn.lock
+coverage
+node_modules
+codecov.yml

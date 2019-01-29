@@ -6,29 +6,29 @@
  *
  */
 
-const Symbol = require('es6-symbol');
+const Symbol = require("es6-symbol");
 
 const MEMBERS = {
-  PARTS: Symbol('PARTS'),
-  DATA: Symbol('DATA'),
-  NAME: Symbol('NAME'),
-  DELIMITER: Symbol('DELIMITER'),
-  GET_TEXT: Symbol('GET_TEXT'),
-  GET_VALUES: Symbol('GET_VALUES'),
-  GET_QUERIES_FROM_VALUE: Symbol('GET_QUERIES_FROM_VALUE'),
-  EXTRACT_LAZY_VALUE: Symbol('EXTRACT_LAZY_VALUE'),
-  BUILD_TEMPLATE: Symbol('BUILD_TEMPLATE'),
-  USE_VALUE_OR_THIS: Symbol('USE_VALUE_OR_THIS'),
+  PARTS: Symbol("PARTS"),
+  DATA: Symbol("DATA"),
+  NAME: Symbol("NAME"),
+  DELIMITER: Symbol("DELIMITER"),
+  GET_TEXT: Symbol("GET_TEXT"),
+  GET_VALUES: Symbol("GET_VALUES"),
+  GET_QUERIES_FROM_VALUE: Symbol("GET_QUERIES_FROM_VALUE"),
+  EXTRACT_LAZY_VALUE: Symbol("EXTRACT_LAZY_VALUE"),
+  BUILD_TEMPLATE: Symbol("BUILD_TEMPLATE"),
+  USE_VALUE_OR_THIS: Symbol("USE_VALUE_OR_THIS")
 };
 
 const TEMPLATE_ARGS = {
-  DOLLAR: Symbol('$'),
-  QUESTION: Symbol('?'),
+  DOLLAR: Symbol("$"),
+  QUESTION: Symbol("?")
 };
 
 class SQLQuery {
   [MEMBERS.EXTRACT_LAZY_VALUE](value) {
-    if (typeof value === 'function') return value(this);
+    if (typeof value === "function") return value(this);
     else return value;
   }
 
@@ -45,9 +45,9 @@ class SQLQuery {
           ...acc,
           ...this[MEMBERS.USE_VALUE_OR_THIS](value)[
             MEMBERS.GET_QUERIES_FROM_VALUE
-          ](value, acc.slice(-1)[0]),
+          ](value, acc.slice(-1)[0])
         ],
-        [],
+        []
       );
     else if (value instanceof SQLQuery) return [{ query: value, prev }];
     else return [];
@@ -64,7 +64,7 @@ class SQLQuery {
           ...acc,
           ...value.reduce((valueAcc, maybeLazyValueMember) => {
             const valueMember = this[MEMBERS.EXTRACT_LAZY_VALUE](
-              maybeLazyValueMember,
+              maybeLazyValueMember
             );
             if (valueMember instanceof SQLQuery) {
               isPreviousQuery = true;
@@ -72,13 +72,13 @@ class SQLQuery {
             } else if (!isPreviousQuery) {
               return [
                 ...valueAcc.slice(0, -1),
-                [...valueAcc.slice(-1)[0], valueMember],
+                [...valueAcc.slice(-1)[0], valueMember]
               ];
             } else {
               isPreviousQuery = false;
               return [...valueAcc, [valueMember]];
             }
-          }, []),
+          }, [])
         ];
       }
       return [...acc, value];
@@ -90,7 +90,7 @@ class SQLQuery {
       case TEMPLATE_ARGS.DOLLAR:
         return `$${index}`;
       case TEMPLATE_ARGS.QUESTION:
-        return '?';
+        return "?";
       default:
         throw new Error(`No such template arg: ${templateArg}`);
     }
@@ -109,25 +109,25 @@ class SQLQuery {
             const delimiter =
               prev !== null && prev === nestedQueries[index - 1]
                 ? this[MEMBERS.EXTRACT_LAZY_VALUE](this[MEMBERS.DELIMITER])
-                : '';
+                : "";
             const res = `${delimiter}${query[MEMBERS.GET_TEXT](
               query[MEMBERS.PARTS],
               query[MEMBERS.DATA],
               templateArg,
-              currentLength,
+              currentLength
             )}`;
             currentLength += query.values.length;
             return res;
           })
-          .join('')}`;
+          .join("")}`;
       else
-        return typeof value !== 'undefined'
+        return typeof value !== "undefined"
           ? `${acc}${part}${this[MEMBERS.BUILD_TEMPLATE](
               templateArg,
-              currentLength++,
+              currentLength++
             )}`
           : `${acc}${part}`;
-    }, '');
+    }, "");
   }
 
   joinBy(delimiter) {
@@ -140,7 +140,7 @@ class SQLQuery {
     return this;
   }
 
-  constructor(parts, data, delimiter = '') {
+  constructor(parts, data, delimiter = "") {
     this[MEMBERS.PARTS] = parts;
     this[MEMBERS.DATA] = data;
     this[MEMBERS.DELIMITER] = delimiter;
@@ -150,16 +150,16 @@ class SQLQuery {
     return this[MEMBERS.GET_TEXT](
       this[MEMBERS.PARTS],
       this[MEMBERS.DATA],
-      TEMPLATE_ARGS.DOLLAR,
-    ).replace(/\n/g, '');
+      TEMPLATE_ARGS.DOLLAR
+    ).replace(/\n/g, "");
   }
 
   get sql() {
     return this[MEMBERS.GET_TEXT](
       this[MEMBERS.PARTS],
       this[MEMBERS.DATA],
-      TEMPLATE_ARGS.QUESTION,
-    ).replace(/\n/g, '');
+      TEMPLATE_ARGS.QUESTION
+    ).replace(/\n/g, "");
   }
 
   get values() {
@@ -181,7 +181,7 @@ function createSQLTemplateQuery(...params) {
   const firstParam = params[0];
   if (Array.isArray(firstParam))
     if (
-      hasOwnProperty.call(firstParam, 'raw') &&
+      hasOwnProperty.call(firstParam, "raw") &&
       Array.isArray(firstParam.raw)
     ) {
       /*
@@ -189,12 +189,12 @@ function createSQLTemplateQuery(...params) {
        */
       return new SQLQuery(firstParam, params.slice(1));
     }
-  return new SQLQuery(Array.from(params, (_, i) => (i ? ',' : '')), params);
+  return new SQLQuery(Array.from(params, (_, i) => (i ? "," : "")), params);
 }
 
-module.exports.SQLQuery = SQLQuery;
-
 module.exports = createSQLTemplateQuery;
+
+module.exports.SQLQuery = SQLQuery;
 
 module.exports.raw = value => new SQLQuery([value], []);
 

@@ -120,6 +120,14 @@ describe("sql-query", () => {
     const prepared = sql(...statements);
     testQuery(prepared);
   });
+  it("imports modules", () => {
+    jest.resetModules();
+    const createSQLTemplateQuery = require("../src");
+    const { SQLQuery, default: defaulT, raw } = createSQLTemplateQuery;
+    expect(new SQLQuery()).toMatchSnapshot();
+    expect(defaulT).toBe(createSQLTemplateQuery);
+    expect(raw("SELECT * FROM table")).toMatchSnapshot();
+  });
   it('creates query with statements joined by "+"', () => {
     const statements = [sql`a`, sql`b`, sql`c`, sql`d`];
     const prepared = sql(statements);

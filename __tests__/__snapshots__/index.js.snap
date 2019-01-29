@@ -127,6 +127,24 @@ exports[`sql-query creates query with statements joined by "," 3`] = `Array []`;
 
 exports[`sql-query creates query with statements joined by "," 4`] = `undefined`;
 
+exports[`sql-query imports modules 1`] = `
+SQLQuery {
+  Symbol(PARTS): undefined,
+  Symbol(DATA): undefined,
+  Symbol(DELIMITER): "",
+}
+`;
+
+exports[`sql-query imports modules 2`] = `
+SQLQuery {
+  Symbol(PARTS): Array [
+    "SELECT * FROM table",
+  ],
+  Symbol(DATA): Array [],
+  Symbol(DELIMITER): "",
+}
+`;
+
 exports[`sql-query uses lazy evaluated statements 1`] = `"SELECT * FROM people WHERE name = $1"`;
 
 exports[`sql-query uses lazy evaluated statements 2`] = `"SELECT * FROM people WHERE name = ?"`;

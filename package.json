@@ -1,8 +1,9 @@
 {
   "author": "Oleg Nosov <olegnosov1@gmail.com>",
   "name": "sql-template-builder",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "main": "./index.js",
+  "description": "Complex SQL query builder",
   "keywords": [
     "sql",
     "query",

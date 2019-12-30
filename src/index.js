@@ -154,14 +154,6 @@ class SQLQuery {
     ).replace(/\n/g, "");
   }
 
-  get sql() {
-    return this[MEMBERS.GET_TEXT](
-      this[MEMBERS.PARTS],
-      this[MEMBERS.DATA],
-      TEMPLATE_ARGS.QUESTION
-    ).replace(/\n/g, "");
-  }
-
   get values() {
     return this[MEMBERS.GET_VALUES](this[MEMBERS.DATA]);
   }
@@ -174,6 +166,17 @@ class SQLQuery {
     return this.text;
   }
 }
+
+Object.defineProperty(SQLQuery.prototype, 'sql', {
+  enumerable: true,
+  get() {
+    return this[MEMBERS.GET_TEXT](
+      this[MEMBERS.PARTS],
+      this[MEMBERS.DATA],
+      TEMPLATE_ARGS.QUESTION
+    ).replace(/\n/g, "");
+  },
+});
 
 const { hasOwnProperty } = Object.prototype;
 

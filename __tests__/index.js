@@ -130,7 +130,7 @@ describe("sql-query", () => {
   });
   it('creates query with statements joined by "+"', () => {
     const statements = [sql`a`, sql`b`, sql`c`, sql`d`];
-    const prepared = sql(statements);
+    const prepared = sql(statements).joinBy('+');
     testQuery(prepared);
   });
   it("creates named prepared statement", () => {

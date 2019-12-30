@@ -12,40 +12,24 @@
 yarn add sql-template-builder
 ```
 
-OR
+or
 
 ```shell
 npm i --save sql-template-builder
 ```
 
-## Motivation
+## Compatible with
 
-Using [node-sql-template-strings](https://github.com/felixfbecker/node-sql-template-strings) you could do things like this
-
-```javascript
-const query = SQL`SELECT * FROM my_table WHERE name = ${"Andrew"}`;
-
-pg.query(query);
-```
-
-That's so cool, but what if you need more complex query? For instance, you want to build query from several parts or wrap one query into another.
-
-```javascript
-const query = SQL`SELECT * FROM people`;
-query.append(SQL` WHERE name = ${name}`).append(` AND age = ${age}`);
-const withQuery = SQL`WITH my_select AS (`
-  .append(query)
-  .append(") SELECT * FROM my_select");
-// :C
-```
-
-So, i'll try to help you solve this problem by using crazy template literal combinations.
+- [mysql](https://www.npmjs.com/package/mysql)
+- [mysql2](https://www.npmjs.com/package/mysql2)
+- [postgres](https://www.npmjs.com/package/pg)
+- [sequelize](https://www.npmjs.com/package/sequelize)
 
 ## API and usage
 
 - sql\`(You statements here)\` - create SQLQuery
 - sql(...[any]) - create SQLQuery statement from other queries or values joined by ','
-- sql([SQLQuery]).joinBy(string) - create SQLQuery as statement joined from passed queries with %joinByArgument% as delimiter
+- sql([SQLQuery]).joinBy(string) - create SQLQuery as statement joined from passed queries with `.joinBy` argument as delimiter
 - sql.raw(string) - create SQLQuery from raw value (Be careful, use escape functions!)
 - query.joinBy(string) - set string to be used to join top-level statements
 - query.setName(string) - set prepared statement name (for pg)
@@ -171,6 +155,27 @@ makeQuery(createQuery)()
 ```
 
 More examples in tests
+
+## Motivation
+
+Using [node-sql-template-strings](https://github.com/felixfbecker/node-sql-template-strings) you could do things like this
+
+```javascript
+const query = SQL`SELECT * FROM my_table WHERE name = ${"Andrew"}`;
+
+pg.query(query);
+```
+
+That's so cool, but what if you need more complex query? For instance, you want to build query from several parts or wrap one query into another.
+
+```javascript
+const query = SQL`SELECT * FROM people`;
+query.append(SQL` WHERE name = ${name}`).append(` AND age = ${age}`);
+const withQuery = SQL`WITH my_select AS (`
+  .append(query)
+  .append(") SELECT * FROM my_select");
+// :C
+```
 
 ## Original idea:
 

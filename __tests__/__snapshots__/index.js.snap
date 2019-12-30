@@ -111,9 +111,9 @@ Array [
 
 exports[`sql-query creates nested query using rest parameters 4`] = `undefined`;
 
-exports[`sql-query creates query with statements joined by "+" 1`] = `"abcd"`;
+exports[`sql-query creates query with statements joined by "+" 1`] = `"a+b+c+d"`;
 
-exports[`sql-query creates query with statements joined by "+" 2`] = `"abcd"`;
+exports[`sql-query creates query with statements joined by "+" 2`] = `"a+b+c+d"`;
 
 exports[`sql-query creates query with statements joined by "+" 3`] = `Array []`;
 

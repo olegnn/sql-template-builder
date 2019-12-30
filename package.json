@@ -1,7 +1,7 @@
 {
   "author": "Oleg Nosov <olegnosov1@gmail.com>",
   "name": "sql-template-builder",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "main": "./index.js",
   "description": "Complex SQL query builder",
   "keywords": [
@@ -20,6 +20,7 @@
   "license": "MIT",
   "devDependencies": {
     "jest": "^24.0.0",
+    "mysql": "^2.17.1",
     "nodemon": "^1.18.9",
     "pg": "^6.2.3"
   },

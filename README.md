@@ -41,16 +41,20 @@ npm i --save sql-template-builder
 const sql = require("sql-template-builder");
 
 const tableName = sql`my_table`;
-// Or you could pass raw value (Be careful and use escape functions in this case!)
-const rawTableName = L.raw("my_table_1");
 
-const conditions = [sql`a = b`, sql`c = d`, sql`e = f`];
+// Or you could pass raw value (Be careful and use escape functions in this case!)
+const rawTableName = sql.raw("my_table_1");
+
+const conditions = [sql`a = ${1}`, sql`c = ${2}`, sql`e = ${3}`];
 
 const conditionQuery = sql(conditions).joinBy(" AND "); // It will join all statements by ' AND '
 
 const prepared = sql`SELECT * FROM ${tableName} LEFT OUTER JOIN ${rawTableName} ON(${conditionQuery})`.setName(
   "my_statement"
 );
+// text: SELECT * FROM my_table LEFT OUTER JOIN my_table_1 ON(a = $1 AND c = $2 AND e = $3)
+// sql: SELECT * FROM my_table LEFT OUTER JOIN my_table_1 ON(a = ? AND c = ? AND e = ?)
+// values: [ 1, 2, 3 ]
 
 // Do something like this
 pg.query(prepared);
@@ -70,7 +74,7 @@ pg.query(query);
 
 // You can use query parts inside query
 
-const complexQuery = sql`SELECT ${sql`name, age`} FROM ${sql`people`} WHERE name = ${"Andrew"}`;
+const complexQuery = sql`SELECT ${sql`name, age`} FROM ${sql`people`} WHERE ${sql`name = ${"Andrew"}`}`;
 // => text: SELECT name, age FROM people WHERE name = $0
 // => sql: SELECT name, age FROM people WHERE name = ?
 // => values: [ 'Andrew' ]
@@ -95,7 +99,7 @@ const tableName = sql`people`;
 
 const columns = [sql`name varchar,`, sql`age int2`];
 
-const createQuery = sql`
+const createTableQuery = sql`
   CREATE TABLE IF NOT EXISTS ${tableName}(${columns})
 `;
 
@@ -113,29 +117,29 @@ const insertStatement = sql`
 // Lazy evaluated :)
 const getNameCondition = query => {
   switch (query) {
-    case myFirstQuery:
+    case firstQuery:
       return "Andrew";
-    case mySecondQuery:
+    case secondQuery:
       return sql`ANY(${["Peter", "Wendi"]})`;
     default:
       return null;
   }
 };
 
-const myFirstQuery = sql`SELECT * FROM people where name = ${getNameCondition}`;
-const mySecondQuery = sql`SELECT * FROM people where name = ${getNameCondition}`;
+const firstQuery = sql`SELECT * FROM people where name = ${getNameCondition}`;
+const secondQuery = sql`SELECT * FROM people where name = ${getNameCondition}`;
 
 const me = sql`me`;
 const myFriends = sql`my_friends`;
 
 const fullQuery = sql`
-  WITH ${me} AS (${myFirstQuery}), ${myFriends} AS (${mySecondQuery})
+  WITH ${me} AS (${firstQuery}), ${myFriends} AS (${secondQuery})
   SELECT name, (SELECT count(*) from ${myFriends}) as friend_count FROM ${me}
 `;
 // => text: WITH me AS (SELECT * FROM people where name = $1), my_friends AS (SELECT * FROM people where name = ANY($2))  SELECT name, (SELECT count(*) from my_friends) as friend_count FROM me
 // => sql: WITH me AS (SELECT * FROM people where name = ?), my_friends AS (SELECT * FROM people where name = ANY(?))  SELECT name, (SELECT count(*) from my_friends) as friend_count FROM me
 // => values: [ 'Andrew', [ 'Peter', 'Wendi' ] ]
-const complexQuery = sql`SELECT ${sql`name, age`} FROM ${sql`people`} WHERE name = ${"Andrew"}`;
+const complexQuery = sql`SELECT ${sql`name, age`} FROM ${sql`people`} WHERE ${sql`name = ${"Andrew"}`}`;
 // => text: SELECT name, age FROM people WHERE name = $0
 // => sql: SELECT name, age FROM people WHERE name = ?
 // => values: [ 'Andrew' ]
@@ -147,7 +151,7 @@ const superComplexQuery = sql`
 const makeQuery = query => async () =>
   void console.log(await pool.query(query));
 
-makeQuery(createQuery)()
+makeQuery(createTableQuery)()
   .then(makeQuery(insertStatement))
   .then(makeQuery(superComplexQuery))
   .then(makeQuery(fullQuery))
@@ -177,6 +181,6 @@ const withQuery = SQL`WITH my_select AS (`
 // :C
 ```
 
-## Original idea:
+## Original idea
 
 [node-sql-template-strings](https://github.com/felixfbecker/node-sql-template-strings)

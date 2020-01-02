@@ -4,20 +4,29 @@ const testQuery = (query, exclude = []) => {
   ["text", "sql", "values", "name"].forEach(
     prop => !exclude.includes(prop) && expect(query[prop]).toMatchSnapshot()
   );
+  expect(query.toString()).toBe(query.text);
 };
+const tableName = sql`table`;
+
+// Or you could pass raw value (Be careful and use escape functions in this case!)
+const rawTableName = sql.raw("table_1");
+
+const conditions = [sql`a = ${1}`, sql`c = ${2}`, sql`e = ${3}`];
+
+const conditionQuery = sql(conditions).joinBy(" AND "); // It will join all statements by ' AND '
 
 describe("sql-query", () => {
-  it("creates a simple sql prepared statement", () => {
-    const prepared = sql`SELECT * FROM cars where name = ${123}`;
-    testQuery(prepared);
+  it("creates a simple sql statement", () => {
+    const statement = sql`SELECT * FROM cars where name = ${123}`;
+    testQuery(statement);
   });
-  it("creates more complicated prepared statement using set of values", () => {
-    const prepared = sql`SELECT * FROM ${sql`cars`} WHERE name = ANY(${[
+  it("creates more complicated statement using set of values", () => {
+    const statement = sql`SELECT * FROM ${sql`cars`} WHERE name = ANY(${[
       1,
       2,
       3
     ]}) ${sql`and surname = ${"Alex"} ${sql`and age <= ${80} ${sql`LEFT INNER JOIN people ON (${sql`people.car_id = cars._id and people.age >= ${18}`})`}`}`}`;
-    testQuery(prepared);
+    testQuery(statement);
   });
   it("creates insert statement", () => {
     const data = [
@@ -57,18 +66,10 @@ describe("sql-query", () => {
         0.33955563575442826
       ]
     ];
-    const prepared = sql`INSERT INTO randoms VALUES ${sql(
-      ...data.map(v => sql`(${sql(...v)})`)
-    )}`;
-    testQuery(prepared);
+    const statement = sql`INSERT INTO randoms VALUES ${data}`;
+    testQuery(statement);
   });
   it("creates nested query using rest parameters", () => {
-    /**
-     * @todo check it normally, i suppose it should work
-     * @todo rethink (maybe) principles of nested query building
-     * instead of using rest operator, it seems like ther's so much
-     * better solution
-     */
     const data = [
       [
         0.1330345695292965,
@@ -106,19 +107,33 @@ describe("sql-query", () => {
         0.8927941295201514
       ]
     ];
-    const prepared = sql`INSERT INTO randoms VALUES ${sql(
+    const statement = sql`INSERT INTO randoms VALUES ${sql(
       ...data.map(v => sql`(${sql(...v)})`)
     )}`;
-    testQuery(prepared);
+    testQuery(statement);
   });
   it("uses lazy evaluated statements", () => {
     const getName = () => "hey";
     testQuery(sql`SELECT * FROM people WHERE name = ${getName}`);
   });
+  it("creates insert statements using lazy evaluated values", () => {
+    const getName = () => sql`randoms`;
+    const getValue = query =>
+      [
+        0.030403041139161813,
+        0.9916368534057693,
+        0.6018355339802939,
+        0.5183570252142247,
+        0.8927941295201514
+      ][data.indexOf(query)];
+    const data = Array.from({ length: 5 }, () => sql`${getValue}`);
+    const statement = sql`INSERT INTO ${getName} VALUES (${sql(...data)})`;
+    testQuery(statement);
+  });
   it('creates query with statements joined by ","', () => {
     const statements = [sql`a`, sql`b`, sql`c`, sql`d`];
-    const prepared = sql(...statements);
-    testQuery(prepared);
+    const statement = sql(...statements);
+    testQuery(statement);
   });
   it("imports modules", () => {
     jest.resetModules();
@@ -130,14 +145,34 @@ describe("sql-query", () => {
   });
   it('creates query with statements joined by "+"', () => {
     const statements = [sql`a`, sql`b`, sql`c`, sql`d`];
-    const prepared = sql(statements).joinBy('+');
-    testQuery(prepared);
+    const statement = sql(statements).joinBy("+");
+    testQuery(statement);
   });
-  it("creates named prepared statement", () => {
-    const name = "select_from_my_table";
-    const prepared = sql`
-      SELECT * FROM ${sql.raw("my_table")}
+  it("creates named statement", () => {
+    const name = "select_from_table";
+    const statement = sql`
+      SELECT * FROM ${sql.raw("table")}
     `.setName(name);
-    testQuery(prepared);
+    testQuery(statement);
+  });
+  it("attemps to pass invalid values to SQLQuery constructor", () => {
+    expect(() => new sql.SQLQuery(1, [], "")).toThrowErrorMatchingSnapshot();
+    expect(() => new sql.SQLQuery([], 1, "")).toThrowErrorMatchingSnapshot();
+    expect(() => new sql.SQLQuery([], [], 0)).toThrowErrorMatchingSnapshot();
+    expect(() => {
+      const query = new sql.SQLQuery();
+      const sym = Object.getOwnPropertySymbols(Object.getPrototypeOf(query));
+      query[sym[4]]("", 0);
+    }).toThrowErrorMatchingSnapshot();
+    expect(() => {
+      const query = new sql.SQLQuery();
+      const sym = Object.getOwnPropertySymbols(Object.getPrototypeOf(query));
+      query[sym[4]]("!", 1);
+    }).toThrowErrorMatchingSnapshot();
+  });
+  it("attemps to set invalid values in query", () => {
+    const query = sql`SELECT 1 from table where name = ${"Me"}`;
+    expect(() => query.setName(0)).toThrowErrorMatchingSnapshot();
+    expect(() => query.joinBy(0)).toThrowErrorMatchingSnapshot();
   });
 });

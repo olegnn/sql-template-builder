@@ -8,6 +8,10 @@
 
 const Symbol = require("es6-symbol");
 
+/**
+ * @enum {Symbol}
+ * SQLQuery members for internal usage.
+ */
 const MEMBERS = {
   QUERIES: Symbol("QUERIES"),
   VALUES: Symbol("VALUES"),
@@ -21,8 +25,20 @@ const MEMBERS = {
   USE_VALUE_OR_THIS: Symbol("USE_VALUE_OR_THIS")
 };
 
+/**
+ * @enum {Symbol}
+ * Template args for query statements. For internal usage.
+ */
 const TEMPLATE_ARGS = {
+  /**
+   * @memberof TEMPLATE_ARGS
+   * Template arg for PostgreSQL
+   */
   DOLLAR: Symbol("$"),
+  /**
+   * @memberof TEMPLATE_ARGS
+   * Template arg for MySQL
+   */
   QUESTION: Symbol("?")
 };
 
@@ -60,7 +76,7 @@ class SQLQuery {
   /**
    * @function
    * Extracts queries from provided value.
-   * @return {Array<SQLQuery>}
+   * @returns {Array<SQLQuery>}
    */
   [MEMBERS.GET_QUERIES_FROM_VALUE](maybeLazyValue, prev = null) {
     const value = this[MEMBERS.EXTRACT_LAZY_VALUE](maybeLazyValue);
@@ -84,7 +100,7 @@ class SQLQuery {
   /**
    * @function
    * Returns all values provided for given query.
-   * @return {Array<*>}
+   * @returns {Array<*>}
    */
   [MEMBERS.GET_VALUES](values) {
     return values.reduce((acc, maybeLazyValue) => {
@@ -282,7 +298,7 @@ class SQLQuery {
 
 /**
  * @function
- * Generates query statement for MySql.
+ * Generates query statement for MySQL.
  * @returns {string}
  */
 Object.defineProperty(SQLQuery.prototype, "sql", {

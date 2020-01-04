@@ -6,14 +6,6 @@ const testQuery = (query, exclude = []) => {
   );
   expect(query.toString()).toBe(query.text);
 };
-const tableName = sql`table`;
-
-// Or you could pass raw value (Be careful and use escape functions in this case!)
-const rawTableName = sql.raw("table_1");
-
-const conditions = [sql`a = ${1}`, sql`c = ${2}`, sql`e = ${3}`];
-
-const conditionQuery = sql(conditions).joinBy(" AND "); // It will join all statements by ' AND '
 
 describe("sql-query", () => {
   it("creates a simple sql statement", () => {

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`sql-query attemps to pass invalid values to SQLQuery constructor 1`] = `"SQLQuery 1st argument (queries) should be array, received: 1 with type number"`;
+exports[`sql-query attemps to pass invalid values to SQLQuery constructor 1`] = `"SQLQuery 1st argument (queryParts) should be array, received: 1 with type number"`;
 
 exports[`sql-query attemps to pass invalid values to SQLQuery constructor 2`] = `"SQLQuery 2nd argument (values) should be array, received: 1 with type number"`;
 

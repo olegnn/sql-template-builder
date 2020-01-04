@@ -32,17 +32,36 @@ const EMPTY_STRING = "";
 
 const NEW_LINE_REGEXP = /\n/g;
 
+/**
+ * @class
+ * Class which describes sql query statement(s) with values.
+ */
 class SQLQuery {
+  /**
+   * @function
+   * Calls value with `this` if value is {Function}.
+   * @returns {*}
+   */
   [MEMBERS.EXTRACT_LAZY_VALUE](value) {
     if (typeof value === "function") return value(this);
     else return value;
   }
 
+  /**
+   * @function
+   * Returns `this` or value if value is of type {SQLQuery}
+   * @returns {SQLQuery}
+   */
   [MEMBERS.USE_VALUE_OR_THIS](maybeLazyValue) {
     const value = this[MEMBERS.EXTRACT_LAZY_VALUE](maybeLazyValue);
     return value instanceof SQLQuery ? value : this;
   }
 
+  /**
+   * @function
+   * Extracts queries from provided value.
+   * @return {Array<SQLQuery>}
+   */
   [MEMBERS.GET_QUERIES_FROM_VALUE](maybeLazyValue, prev = null) {
     const value = this[MEMBERS.EXTRACT_LAZY_VALUE](maybeLazyValue);
     if (Array.isArray(value)) {
@@ -62,6 +81,11 @@ class SQLQuery {
     }
   }
 
+  /**
+   * @function
+   * Returns all values provided for given query.
+   * @return {Array<*>}
+   */
   [MEMBERS.GET_VALUES](values) {
     return values.reduce((acc, maybeLazyValue) => {
       const value = this[MEMBERS.EXTRACT_LAZY_VALUE](maybeLazyValue);
@@ -94,6 +118,11 @@ class SQLQuery {
     }, EMPTY_ARRAY);
   }
 
+  /**
+   * @function
+   * Constructs string containing template arg with given index.
+   * @returns {string}
+   */
   [MEMBERS.BUILD_TEMPLATE](templateArg, index) {
     if (index > 0)
       switch (templateArg) {
@@ -110,14 +139,19 @@ class SQLQuery {
       );
   }
 
-  [MEMBERS.GET_TEXT](queries, values, templateArg, argIndex = 1) {
-    return queries.reduce((acc, part, index) => {
+  /**
+   * @function
+   * Returns query text statement with template args.
+   * @returns {string}
+   */
+  [MEMBERS.GET_TEXT](queryParts, values, templateArg, argIndex = 1) {
+    return queryParts.reduce((acc, queryPart, index) => {
       const value = this[MEMBERS.EXTRACT_LAZY_VALUE](values[index]);
       const nestedQueries = this[MEMBERS.USE_VALUE_OR_THIS](value)[
         MEMBERS.GET_QUERIES_FROM_VALUE
       ](value);
       if (nestedQueries.length) {
-        return `${acc}${part}${nestedQueries
+        return `${acc}${queryPart}${nestedQueries
           .map(({ query, prev }, index) => {
             const delimiter =
               prev !== null && prev === nestedQueries[index - 1]
@@ -135,17 +169,21 @@ class SQLQuery {
           .join(EMPTY_STRING)}`;
       } else {
         if (typeof value !== "undefined") {
-          return `${acc}${part}${this[MEMBERS.BUILD_TEMPLATE](
+          return `${acc}${queryPart}${this[MEMBERS.BUILD_TEMPLATE](
             templateArg,
             argIndex++
           )}`;
         } else {
-          return `${acc}${part}`;
+          return `${acc}${queryPart}`;
         }
       }
     }, EMPTY_STRING);
   }
 
+  /**
+   * Sets joiner of top-level statements.
+   * @param {string} delimiter - String to be used to join top-level statements.
+   */
   joinBy(delimiter) {
     if (typeof delimiter === "string") {
       this[MEMBERS.DELIMITER] = delimiter;
@@ -157,6 +195,11 @@ class SQLQuery {
     }
   }
 
+  /**
+   * Sets name of prepared statement
+   * @param {string} name - Name of statement.
+   *
+   */
   setName(name) {
     if (typeof name === "string") {
       this[MEMBERS.NAME] = name;
@@ -168,14 +211,21 @@ class SQLQuery {
     }
   }
 
+  /**
+   * Constructs new SQLQuery using given query parts, values and delimiter.
+   * @constructor
+   * @param {?Array<string>} queryParts - Array of parts of query (queries).
+   * @param {?Array<*>} values - Array of values to be used with query.
+   * @param {?string} delimiter - String to join top-level statements.
+   */
   constructor(
-    queries = EMPTY_ARRAY,
+    queryParts = EMPTY_ARRAY,
     values = EMPTY_ARRAY,
     delimiter = EMPTY_STRING
   ) {
-    if (!Array.isArray(queries)) {
+    if (!Array.isArray(queryParts)) {
       throw new Error(
-        `SQLQuery 1st argument (queries) should be array, received: ${queries} with type ${typeof queries}`
+        `SQLQuery 1st argument (queryParts) should be array, received: ${queryParts} with type ${typeof queryParts}`
       );
     } else if (!Array.isArray(values)) {
       throw new Error(
@@ -186,12 +236,16 @@ class SQLQuery {
         `SQLQuery 3rd argument (delimiter) should be string, received: ${delimiter} with type ${typeof delimiter}`
       );
     } else {
-      this[MEMBERS.QUERIES] = queries;
+      this[MEMBERS.QUERIES] = queryParts;
       this[MEMBERS.VALUES] = values;
       this[MEMBERS.DELIMITER] = delimiter;
     }
   }
 
+  /**
+   * Constructs query statement with $ template args to be used by PostgreSQL.
+   * @returns {string}
+   */
   get text() {
     return this[MEMBERS.GET_TEXT](
       this[MEMBERS.QUERIES],
@@ -200,19 +254,37 @@ class SQLQuery {
     ).replace(NEW_LINE_REGEXP, EMPTY_STRING);
   }
 
+  /**
+   * Returns values passed to query.
+   * @returns {Array<*>}
+   */
   get values() {
     return this[MEMBERS.GET_VALUES](this[MEMBERS.VALUES]);
   }
 
+  /**
+   * Returns name of query (if specified)
+   * @returns {?string}
+   */
   get name() {
-    return this[MEMBERS.EXTRACT_LAZY_VALUE](this[MEMBERS.NAME]);
+    return this[MEMBERS.NAME];
   }
 
+  /**
+   * @function
+   * Constructs PostgreSQL query statement.
+   * @returns {string}
+   */
   toString() {
     return this.text;
   }
 }
 
+/**
+ * @function
+ * Generates query statement for MySql.
+ * @returns {string}
+ */
 Object.defineProperty(SQLQuery.prototype, "sql", {
   enumerable: true,
   get() {
@@ -226,6 +298,11 @@ Object.defineProperty(SQLQuery.prototype, "sql", {
 
 const { hasOwnProperty } = Object.prototype;
 
+/**
+ * @function
+ * Function which may be used as tag to create query with given values or as function to join queries or values.
+ * @returns {SQLQuery}
+ */
 function createSQLTemplateQuery(...params) {
   const firstParam = params[0];
   if (Array.isArray(firstParam))
@@ -234,7 +311,7 @@ function createSQLTemplateQuery(...params) {
       Array.isArray(firstParam.raw)
     ) {
       /*
-       * So, function is used as tag
+       * Function is used as tag
        */
       return new SQLQuery(firstParam, params.slice(1));
     }
@@ -248,6 +325,6 @@ module.exports = createSQLTemplateQuery;
 
 module.exports.SQLQuery = SQLQuery;
 
-module.exports.raw = query => new SQLQuery([query], EMPTY_ARRAY);
+module.exports.raw = query => new SQLQuery([query]);
 
 module.exports.default = createSQLTemplateQuery;

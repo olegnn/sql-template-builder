@@ -1,18 +1,18 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`sql-query attemps to pass invalid values to SQLQuery constructor 1`] = `"SQLQuery 1st argument (queryParts) should be array, received: 1 with type number"`;
+exports[`sql-query attemps to pass invalid values to SQLQuery constructor 1`] = `"SQLQuery 1st argument (queryParts) should be array, received: 1 with type number."`;
 
-exports[`sql-query attemps to pass invalid values to SQLQuery constructor 2`] = `"SQLQuery 2nd argument (values) should be array, received: 1 with type number"`;
+exports[`sql-query attemps to pass invalid values to SQLQuery constructor 2`] = `"SQLQuery 2nd argument (values) should be array, received: 1 with type number."`;
 
-exports[`sql-query attemps to pass invalid values to SQLQuery constructor 3`] = `"SQLQuery 3rd argument (delimiter) should be string, received: 0 with type number"`;
+exports[`sql-query attemps to pass invalid values to SQLQuery constructor 3`] = `"SQLQuery 3rd argument (delimiter) should be string, received: 0 with type number."`;
 
-exports[`sql-query attemps to pass invalid values to SQLQuery constructor 4`] = `"Template arg index can't be less than 1, received: 0"`;
+exports[`sql-query attemps to pass invalid values to SQLQuery constructor 4`] = `"Template arg index can't be less than 1, received: 0."`;
 
 exports[`sql-query attemps to pass invalid values to SQLQuery constructor 5`] = `"No such template arg: !"`;
 
 exports[`sql-query attemps to set invalid values in query 1`] = `"SQLQuery name should be string, received: 0 with type number"`;
 
-exports[`sql-query attemps to set invalid values in query 2`] = `"SQLQuery delimiter should be string, received: 0 with type number"`;
+exports[`sql-query attemps to set invalid values in query 2`] = `"SQLQuery delimiter should be string, received: 0 with type number."`;
 
 exports[`sql-query creates a simple sql statement 1`] = `"SELECT * FROM cars where name = $1"`;
 

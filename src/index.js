@@ -9,7 +9,7 @@
 const Symbol = require("es6-symbol");
 
 /**
- * @enum {Symbol}
+ * @enum {symbol}
  * SQLQuery members for internal usage.
  */
 const MEMBERS = {
@@ -26,18 +26,18 @@ const MEMBERS = {
 };
 
 /**
- * @enum {Symbol}
+ * @enum {symbol}
  * Template args for query statements. For internal usage.
  */
 const TEMPLATE_ARGS = {
   /**
    * @memberof TEMPLATE_ARGS
-   * Template arg for PostgreSQL
+   * Template arg for PostgreSQL.
    */
   DOLLAR: Symbol("$"),
   /**
    * @memberof TEMPLATE_ARGS
-   * Template arg for MySQL
+   * Template arg for MySQL.
    */
   QUESTION: Symbol("?")
 };
@@ -55,7 +55,8 @@ const NEW_LINE_REGEXP = /\n/g;
 class SQLQuery {
   /**
    * @function
-   * Calls value with `this` if value is {Function}.
+   * Calls value with `this` if value is {function}.
+   * @param {*} value
    * @returns {*}
    */
   [MEMBERS.EXTRACT_LAZY_VALUE](value) {
@@ -65,7 +66,8 @@ class SQLQuery {
 
   /**
    * @function
-   * Returns `this` or value if value is of type {SQLQuery}
+   * Returns `this` or value if value is instance of {SQLQuery}.
+   * @param {*} maybeLazyValue
    * @returns {SQLQuery}
    */
   [MEMBERS.USE_VALUE_OR_THIS](maybeLazyValue) {
@@ -76,7 +78,9 @@ class SQLQuery {
   /**
    * @function
    * Extracts queries from provided value.
-   * @returns {Array<SQLQuery>}
+   * @param {*} maybeLazyValue
+   * @param {?*} prev
+   * @returns {Array<{ query: SQLQuery, prev: ?SQLQuery}>}
    */
   [MEMBERS.GET_QUERIES_FROM_VALUE](maybeLazyValue, prev = null) {
     const value = this[MEMBERS.EXTRACT_LAZY_VALUE](maybeLazyValue);
@@ -100,6 +104,7 @@ class SQLQuery {
   /**
    * @function
    * Returns all values provided for given query.
+   * @param {Array<*>} values
    * @returns {Array<*>}
    */
   [MEMBERS.GET_VALUES](values) {
@@ -137,6 +142,8 @@ class SQLQuery {
   /**
    * @function
    * Constructs string containing template arg with given index.
+   * @param {symbol} templateArg
+   * @param {number} index
    * @returns {string}
    */
   [MEMBERS.BUILD_TEMPLATE](templateArg, index) {
@@ -151,13 +158,17 @@ class SQLQuery {
       }
     else
       throw new Error(
-        `Template arg index can't be less than 1, received: ${index}`
+        `Template arg index can't be less than 1, received: ${index}.`
       );
   }
 
   /**
    * @function
    * Returns query text statement with template args.
+   * @param {Array<string>} queryPart
+   * @param {Array<*>} values
+   * @param {symbol} templateArg
+   * @param {?number} argIndex
    * @returns {string}
    */
   [MEMBERS.GET_TEXT](queryParts, values, templateArg, argIndex = 1) {
@@ -199,6 +210,7 @@ class SQLQuery {
   /**
    * Sets joiner of top-level statements.
    * @param {string} delimiter - String to be used to join top-level statements.
+   * @returns {SQLQuery}
    */
   joinBy(delimiter) {
     if (typeof delimiter === "string") {
@@ -206,15 +218,15 @@ class SQLQuery {
       return this;
     } else {
       throw new Error(
-        `SQLQuery delimiter should be string, received: ${delimiter} with type ${typeof delimiter}`
+        `SQLQuery delimiter should be string, received: ${delimiter} with type ${typeof delimiter}.`
       );
     }
   }
 
   /**
-   * Sets name of prepared statement
+   * Sets name of prepared statement.
    * @param {string} name - Name of statement.
-   *
+   * @returns {SQLQuery}
    */
   setName(name) {
     if (typeof name === "string") {
@@ -241,15 +253,15 @@ class SQLQuery {
   ) {
     if (!Array.isArray(queryParts)) {
       throw new Error(
-        `SQLQuery 1st argument (queryParts) should be array, received: ${queryParts} with type ${typeof queryParts}`
+        `SQLQuery 1st argument (queryParts) should be array, received: ${queryParts} with type ${typeof queryParts}.`
       );
     } else if (!Array.isArray(values)) {
       throw new Error(
-        `SQLQuery 2nd argument (values) should be array, received: ${values} with type ${typeof values}`
+        `SQLQuery 2nd argument (values) should be array, received: ${values} with type ${typeof values}.`
       );
     } else if (typeof delimiter !== "string") {
       throw new Error(
-        `SQLQuery 3rd argument (delimiter) should be string, received: ${delimiter} with type ${typeof delimiter}`
+        `SQLQuery 3rd argument (delimiter) should be string, received: ${delimiter} with type ${typeof delimiter}.`
       );
     } else {
       this[MEMBERS.QUERIES] = queryParts;

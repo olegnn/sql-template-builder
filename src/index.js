@@ -217,7 +217,7 @@ class SQLQuery {
       this[MEMBERS.DELIMITER] = delimiter;
       return this;
     } else {
-      throw new Error(
+      throw new TypeError(
         `SQLQuery delimiter should be string, received: ${delimiter} with type ${typeof delimiter}.`
       );
     }
@@ -233,7 +233,7 @@ class SQLQuery {
       this[MEMBERS.NAME] = name;
       return this;
     } else {
-      throw new Error(
+      throw new TypeError(
         `SQLQuery name should be string, received: ${name} with type ${typeof name}`
       );
     }
@@ -252,15 +252,15 @@ class SQLQuery {
     delimiter = EMPTY_STRING
   ) {
     if (!Array.isArray(queryParts)) {
-      throw new Error(
+      throw new TypeError(
         `SQLQuery 1st argument (queryParts) should be array, received: ${queryParts} with type ${typeof queryParts}.`
       );
     } else if (!Array.isArray(values)) {
-      throw new Error(
+      throw new TypeError(
         `SQLQuery 2nd argument (values) should be array, received: ${values} with type ${typeof values}.`
       );
     } else if (typeof delimiter !== "string") {
-      throw new Error(
+      throw new TypeError(
         `SQLQuery 3rd argument (delimiter) should be string, received: ${delimiter} with type ${typeof delimiter}.`
       );
     } else {

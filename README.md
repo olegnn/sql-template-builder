@@ -2,7 +2,6 @@
 
 [![Build Status](https://travis-ci.org/olegnn/sql-template-builder.svg?branch=master)](https://travis-ci.org/olegnn/sql-template-builder)
 [![npm](https://img.shields.io/npm/v/sql-template-builder.svg)](https://www.npmjs.com/package/sql-template-builder)
-[![npm](https://img.shields.io/npm/dm/sql-template-builder.svg)](https://www.npmjs.com/package/sql-template-builder)
 [![node](https://img.shields.io/node/v/sql-template-builder.svg)](https://nodejs.org)
 [![codecov](https://codecov.io/gh/olegnn/sql-template-builder/branch/master/graph/badge.svg)](https://codecov.io/gh/olegnn/sql-template-builder)
 

@@ -10,7 +10,7 @@ const Symbol = require("es6-symbol");
 
 /**
  * @enum {symbol}
- * SQLQuery members for internal usage.
+ * SQLQuery members. For internal usage.
  */
 const MEMBERS = {
   QUERIES: Symbol("QUERIES"),
@@ -22,7 +22,7 @@ const MEMBERS = {
   GET_QUERIES_FROM_VALUE: Symbol("GET_QUERIES_FROM_VALUE"),
   EXTRACT_LAZY_VALUE: Symbol("EXTRACT_LAZY_VALUE"),
   BUILD_TEMPLATE: Symbol("BUILD_TEMPLATE"),
-  USE_VALUE_OR_THIS: Symbol("USE_VALUE_OR_THIS")
+  USE_VALUE_OR_THIS: Symbol("USE_VALUE_OR_THIS"),
 };
 
 /**
@@ -39,7 +39,7 @@ const TEMPLATE_ARGS = {
    * @memberof TEMPLATE_ARGS
    * Template arg for MySQL.
    */
-  QUESTION: Symbol("?")
+  QUESTION: Symbol("?"),
 };
 
 const EMPTY_ARRAY = [];
@@ -50,12 +50,12 @@ const NEW_LINE_REGEXP = /\n/g;
 
 /**
  * @class
- * Class which describes sql query statement(s) with values.
+ * Describes sql query statement(s) with values.
  */
 class SQLQuery {
   /**
    * @function
-   * Calls value with `this` if value is {function}.
+   * Calls value with `this` if value is of type {function}.
    * @param {*} value
    * @returns {*}
    */
@@ -90,7 +90,7 @@ class SQLQuery {
           ...acc,
           ...this[MEMBERS.USE_VALUE_OR_THIS](value)[
             MEMBERS.GET_QUERIES_FROM_VALUE
-          ](value, acc.slice(-1)[0])
+          ](value, acc[acc.length - 1]),
         ],
         EMPTY_ARRAY
       );
@@ -126,22 +126,23 @@ class SQLQuery {
             } else if (!isPreviousQuery) {
               return [
                 ...valueAcc.slice(0, -1),
-                [...valueAcc.slice(-1)[0], valueMember]
+                [...valueAcc[valueAcc.length - 1], valueMember],
               ];
             } else {
               isPreviousQuery = false;
               return [...valueAcc, [valueMember]];
             }
-          }, EMPTY_ARRAY)
+          }, EMPTY_ARRAY),
         ];
+      } else {
+        return [...acc, value];
       }
-      return [...acc, value];
     }, EMPTY_ARRAY);
   }
 
   /**
    * @function
-   * Constructs string containing template arg with given index.
+   * Constructs string which contains template arg with given index.
    * @param {symbol} templateArg
    * @param {number} index
    * @returns {string}
@@ -190,19 +191,18 @@ class SQLQuery {
               templateArg,
               argIndex
             )}`;
+            
             argIndex += query.values.length;
             return res;
           })
           .join(EMPTY_STRING)}`;
+      } else if (typeof value !== "undefined") {
+        return `${acc}${queryPart}${this[MEMBERS.BUILD_TEMPLATE](
+          templateArg,
+          argIndex++
+        )}`;
       } else {
-        if (typeof value !== "undefined") {
-          return `${acc}${queryPart}${this[MEMBERS.BUILD_TEMPLATE](
-            templateArg,
-            argIndex++
-          )}`;
-        } else {
-          return `${acc}${queryPart}`;
-        }
+        return `${acc}${queryPart}`;
       }
     }, EMPTY_STRING);
   }
@@ -321,7 +321,7 @@ Object.defineProperty(SQLQuery.prototype, "sql", {
       this[MEMBERS.VALUES],
       TEMPLATE_ARGS.QUESTION
     ).replace(NEW_LINE_REGEXP, EMPTY_STRING);
-  }
+  },
 });
 
 const { hasOwnProperty } = Object.prototype;
@@ -353,6 +353,6 @@ module.exports = createSQLTemplateQuery;
 
 module.exports.SQLQuery = SQLQuery;
 
-module.exports.raw = query => new SQLQuery([query]);
+module.exports.raw = (query) => new SQLQuery([query]);
 
 module.exports.default = createSQLTemplateQuery;

@@ -1,14 +1,14 @@
 const pg = require("pg");
 const sql = require("../src");
 
-const pool = new pg.Pool();
+const pool = new pg.Pool({ host: "localhost", database: "postgres" });
 
 const tableName = sql`people`;
 
-const columns = [sql`name varchar,`, sql`age int2`];
+const columns = [sql`name varchar`, sql`age int2`];
 
 const createTableQuery = sql`
-  CREATE TABLE IF NOT EXISTS ${tableName}(${columns});
+  CREATE TABLE IF NOT EXISTS ${tableName}(${sql(...columns)});
 `;
 
 const data = [

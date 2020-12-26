@@ -30,8 +30,8 @@ npm i --save sql-template-builder
 - **sql(...[any])** - create SQLQuery statement from other queries or values joined by ','
 - **sql([SQLQuery])**.joinBy(string) - create SQLQuery as statement joined from passed queries with `.joinBy` argument as delimiter
 - **sql.raw(string)** - create SQLQuery from raw value (Be careful, use escape functions!)
-- query.joinBy(string) - set string to be used to join top-level statements
-- query.setName(string) - set prepared statement name (for pg)
+- query.joinBy(string) - create SQLQuery with given string to be used to join top-level statements
+- query.setName(string) - create SQLQuery with given name set as prepared statement name (for pg)
 - query.text - get template text for pg query
 - query.sql - get template text for sql query
 - query.values - get values for query
@@ -90,19 +90,23 @@ Time to build some dynamic query system, yep?
 
 ```javascript
 const pg = require("pg");
-const sql = require("sql-template-builder");
+const sql = require("../src");
 
-const pool = new pg.Pool /** Your PG config, please */();
+const pool = new pg.Pool(/** Your PG config, please */);
 
 const tableName = sql`people`;
 
-const columns = [sql`name varchar,`, sql`age int2`];
+const columns = [sql`name varchar`, sql`age int2`];
 
 const createTableQuery = sql`
-  CREATE TABLE IF NOT EXISTS ${tableName}(${columns})
+  CREATE TABLE IF NOT EXISTS ${tableName}(${sql(...columns)});
 `;
 
-const data = [["Peter", "25"], ["Wendy", "24"], ["Andrew", "32"]];
+const data = [
+  ["Peter", "25"],
+  ["Wendy", "24"],
+  ["Andrew", "32"]
+];
 
 const insertStatement = sql`
   INSERT INTO ${tableName} VALUES ${sql(
@@ -138,7 +142,8 @@ const fullQuery = sql`
 // => text: WITH me AS (SELECT * FROM people where name = $1), my_friends AS (SELECT * FROM people where name = ANY($2))  SELECT name, (SELECT count(*) from my_friends) as friend_count FROM me
 // => sql: WITH me AS (SELECT * FROM people where name = ?), my_friends AS (SELECT * FROM people where name = ANY(?))  SELECT name, (SELECT count(*) from my_friends) as friend_count FROM me
 // => values: [ 'Andrew', [ 'Peter', 'Wendi' ] ]
-const complexQuery = sql`SELECT ${sql`name, age`} FROM ${sql`people`} WHERE ${sql`name = ${"Andrew"}`}`;
+
+const complexQuery = sql`SELECT ${sql`name, age`} FROM ${sql`people`} WHERE name = ${"Andrew"}`;
 // => text: SELECT name, age FROM people WHERE name = $0
 // => sql: SELECT name, age FROM people WHERE name = ?
 // => values: [ 'Andrew' ]

@@ -26,11 +26,11 @@ Array [
 
 exports[`sql-query creates a simple sql statement 4`] = `undefined`;
 
-exports[`sql-query creates insert statement 1`] = `"INSERT INTO randoms VALUES $1"`;
+exports[`sql-query creates bunch of insert statements 1`] = `"INSERT INTO randoms VALUES $1"`;
 
-exports[`sql-query creates insert statement 2`] = `"INSERT INTO randoms VALUES ?"`;
+exports[`sql-query creates bunch of insert statements 2`] = `"INSERT INTO randoms VALUES ?"`;
 
-exports[`sql-query creates insert statement 3`] = `
+exports[`sql-query creates bunch of insert statements 3`] = `
 Array [
   Array [
     Array [
@@ -72,7 +72,65 @@ Array [
 ]
 `;
 
-exports[`sql-query creates insert statement 4`] = `undefined`;
+exports[`sql-query creates bunch of insert statements 4`] = `undefined`;
+
+exports[`sql-query creates insert statement which contains query inside of array of values 1`] = `"INSERT INTO randoms VALUES ($1,$2)"`;
+
+exports[`sql-query creates insert statement which contains query inside of array of values 2`] = `"INSERT INTO randoms VALUES (?,?)"`;
+
+exports[`sql-query creates insert statement which contains query inside of array of values 3`] = `
+Array [
+  Array [
+    Array [
+      0.1330345695292965,
+      0.3087555548059029,
+      0.15782168758438098,
+      0.8914307967523212,
+      0.6590624325544447,
+    ],
+    Array [
+      0.1330345695292965,
+      0.3087555548059029,
+      0.15782168758438098,
+      0.8914307967523212,
+      0.6590624325544447,
+    ],
+    Array [
+      0.1330345695292965,
+      0.3087555548059029,
+      0.15782168758438098,
+      0.8914307967523212,
+      0.6590624325544447,
+    ],
+    Array [
+      0.1330345695292965,
+      0.3087555548059029,
+      0.15782168758438098,
+      0.8914307967523212,
+      0.6590624325544447,
+    ],
+    Array [
+      0.1330345695292965,
+      0.3087555548059029,
+      0.15782168758438098,
+      0.8914307967523212,
+      0.6590624325544447,
+    ],
+  ],
+  Array [
+    Array [
+      0.15782168758438098,
+      0.15782168758438098,
+    ],
+    Array [
+      0.6590624325544447,
+      0.6590624325544447,
+    ],
+  ],
+]
+`;
+
+exports[`sql-query creates insert statement which contains query inside of array of values 4`] = `undefined`;
 
 exports[`sql-query creates insert statements using lazy evaluated values 1`] = `"INSERT INTO randoms VALUES ($1,$2,$3,$4,$5)"`;
 
@@ -89,25 +147,6 @@ Array [
 `;
 
 exports[`sql-query creates insert statements using lazy evaluated values 4`] = `undefined`;
-
-exports[`sql-query creates more complicated statement using set of values 1`] = `"SELECT * FROM cars WHERE name = ANY($1) and surname = $2 and age <= $3 LEFT INNER JOIN people ON (people.car_id = cars._id and people.age >= $4)"`;
-
-exports[`sql-query creates more complicated statement using set of values 2`] = `"SELECT * FROM cars WHERE name = ANY(?) and surname = ? and age <= ? LEFT INNER JOIN people ON (people.car_id = cars._id and people.age >= ?)"`;
-
-exports[`sql-query creates more complicated statement using set of values 3`] = `
-Array [
-  Array [
-    1,
-    2,
-    3,
-  ],
-  "Alex",
-  80,
-  18,
-]
-`;
-
-exports[`sql-query creates more complicated statement using set of values 4`] = `undefined`;
 
 exports[`sql-query creates named statement 1`] = `"      SELECT * FROM table    "`;
 
@@ -169,21 +208,65 @@ exports[`sql-query creates query with statements joined by "," 3`] = `Array []`;
 
 exports[`sql-query creates query with statements joined by "," 4`] = `undefined`;
 
+exports[`sql-query creates sql statement using set of values 1`] = `"SELECT * FROM cars WHERE name = ANY($1) and surname = $2 and age <= $3 LEFT INNER JOIN people ON (people.car_id = cars._id and people.age >= $4)"`;
+
+exports[`sql-query creates sql statement using set of values 2`] = `"SELECT * FROM cars WHERE name = ANY(?) and surname = ? and age <= ? LEFT INNER JOIN people ON (people.car_id = cars._id and people.age >= ?)"`;
+
+exports[`sql-query creates sql statement using set of values 3`] = `
+Array [
+  Array [
+    1,
+    2,
+    3,
+  ],
+  "Alex",
+  80,
+  18,
+]
+`;
+
+exports[`sql-query creates sql statement using set of values 4`] = `undefined`;
+
+exports[`sql-query creates statement using lazy evaluated queries and checks count of fn calls 1`] = `"INSERT INTO $1 VALUES ($2, $3, $4)"`;
+
+exports[`sql-query creates statement using lazy evaluated queries and checks count of fn calls 2`] = `"INSERT INTO ? VALUES (?, ?, ?)"`;
+
+exports[`sql-query creates statement using lazy evaluated queries and checks count of fn calls 3`] = `
+Array [
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+]
+`;
+
+exports[`sql-query creates statement using lazy evaluated queries and checks count of fn calls 4`] = `undefined`;
+
 exports[`sql-query imports modules 1`] = `
 SQLQuery {
-  Symbol(QUERIES): Array [],
-  Symbol(VALUES): Array [],
-  Symbol(DELIMITER): "",
+  Symbol(sql-template-builder/QUERIES): Array [],
+  Symbol(sql-template-builder/VALUES): Array [],
+  Symbol(sql-template-builder/DELIMITER): "",
+  Symbol(sql-template-builder/NAME): undefined,
+  Symbol(sql-template-builder/GET_QUERY_VALUES): [Function],
+  Symbol(sql-template-builder/GET_QUERY_STATEMENTS): [Function],
+  Symbol(sql-template-builder/GET_TEXT): [Function],
+  Symbol(sql-template-builder/GET_SQL): [Function],
 }
 `;
 
 exports[`sql-query imports modules 2`] = `
 SQLQuery {
-  Symbol(QUERIES): Array [
+  Symbol(sql-template-builder/QUERIES): Array [
     "SELECT * FROM table",
   ],
-  Symbol(VALUES): Array [],
-  Symbol(DELIMITER): "",
+  Symbol(sql-template-builder/VALUES): Array [],
+  Symbol(sql-template-builder/DELIMITER): "",
+  Symbol(sql-template-builder/NAME): undefined,
+  Symbol(sql-template-builder/GET_QUERY_VALUES): [Function],
+  Symbol(sql-template-builder/GET_QUERY_STATEMENTS): [Function],
+  Symbol(sql-template-builder/GET_TEXT): [Function],
+  Symbol(sql-template-builder/GET_SQL): [Function],
 }
 `;
 

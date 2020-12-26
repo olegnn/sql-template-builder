@@ -13,16 +13,16 @@ const Symbol = require("es6-symbol");
  * SQLQuery members. For internal usage.
  */
 const MEMBERS = {
-  QUERIES: Symbol("QUERIES"),
-  VALUES: Symbol("VALUES"),
-  NAME: Symbol("NAME"),
-  DELIMITER: Symbol("DELIMITER"),
-  GET_TEXT: Symbol("GET_TEXT"),
-  GET_VALUES: Symbol("GET_VALUES"),
-  GET_QUERIES_FROM_VALUE: Symbol("GET_QUERIES_FROM_VALUE"),
-  EXTRACT_LAZY_VALUE: Symbol("EXTRACT_LAZY_VALUE"),
-  BUILD_TEMPLATE: Symbol("BUILD_TEMPLATE"),
-  USE_VALUE_OR_THIS: Symbol("USE_VALUE_OR_THIS"),
+  QUERIES: Symbol("sql-template-builder/QUERIES"),
+  VALUES: Symbol("sql-template-builder/VALUES"),
+  NAME: Symbol("sql-template-builder/NAME"),
+  DELIMITER: Symbol("sql-template-builder/DELIMITER"),
+  GET_QUERY_STATEMENTS: Symbol("sql-template-builder/GET_QUERY_STATEMENTS"),
+  GET_QUERY_VALUES: Symbol("sql-template-builder/GET_QUERY_VALUES"),
+  EXTRACT_LAZY_VALUE: Symbol("sql-template-builder/EXTRACT_LAZY_VALUE"),
+  BUILD_TEMPLATE: Symbol("sql-template-builder/BUILD_TEMPLATE"),
+  GET_TEXT: Symbol("sql-template-builder/GET_TEXT"),
+  GET_SQL: Symbol("sql-template-builder/GET_SQL"),
 };
 
 /**
@@ -34,18 +34,16 @@ const TEMPLATE_ARGS = {
    * @memberof TEMPLATE_ARGS
    * Template arg for PostgreSQL.
    */
-  DOLLAR: Symbol("$"),
+  DOLLAR: Symbol("sql-template-builder/TEMPLATE_ARG_DOLLAR"),
   /**
    * @memberof TEMPLATE_ARGS
    * Template arg for MySQL.
    */
-  QUESTION: Symbol("?"),
+  QUESTION: Symbol("sql-template-builder/TEMPLATE_ARG_QUESTION"),
 };
 
+const TEMPLATE_ARG = Symbol("sql-template-builder/TEMPLATE_ARG");
 const EMPTY_ARRAY = [];
-
-const EMPTY_STRING = "";
-
 const NEW_LINE_REGEXP = /\n/g;
 
 /**
@@ -53,192 +51,6 @@ const NEW_LINE_REGEXP = /\n/g;
  * Describes sql query statement(s) with values.
  */
 class SQLQuery {
-  /**
-   * @function
-   * Calls value with `this` if value is of type {function}.
-   * @param {*} value
-   * @returns {*}
-   */
-  [MEMBERS.EXTRACT_LAZY_VALUE](value) {
-    if (typeof value === "function") return value(this);
-    else return value;
-  }
-
-  /**
-   * @function
-   * Returns `this` or value if value is instance of {SQLQuery}.
-   * @param {*} maybeLazyValue
-   * @returns {SQLQuery}
-   */
-  [MEMBERS.USE_VALUE_OR_THIS](maybeLazyValue) {
-    const value = this[MEMBERS.EXTRACT_LAZY_VALUE](maybeLazyValue);
-    return value instanceof SQLQuery ? value : this;
-  }
-
-  /**
-   * @function
-   * Extracts queries from provided value.
-   * @param {*} maybeLazyValue
-   * @param {?*} prev
-   * @returns {Array<{ query: SQLQuery, prev: ?SQLQuery}>}
-   */
-  [MEMBERS.GET_QUERIES_FROM_VALUE](maybeLazyValue, prev = null) {
-    const value = this[MEMBERS.EXTRACT_LAZY_VALUE](maybeLazyValue);
-    if (Array.isArray(value)) {
-      return value.reduce(
-        (acc, value) => [
-          ...acc,
-          ...this[MEMBERS.USE_VALUE_OR_THIS](value)[
-            MEMBERS.GET_QUERIES_FROM_VALUE
-          ](value, acc[acc.length - 1]),
-        ],
-        EMPTY_ARRAY
-      );
-    } else if (value instanceof SQLQuery) {
-      return [{ query: value, prev }];
-    } else {
-      return EMPTY_ARRAY;
-    }
-  }
-
-  /**
-   * @function
-   * Returns all values provided for given query.
-   * @param {Array<*>} values
-   * @returns {Array<*>}
-   */
-  [MEMBERS.GET_VALUES](values) {
-    return values.reduce((acc, maybeLazyValue) => {
-      const value = this[MEMBERS.EXTRACT_LAZY_VALUE](maybeLazyValue);
-      if (value instanceof SQLQuery) {
-        return [...acc, ...value.values];
-      } else if (Array.isArray(value)) {
-        let isPreviousQuery = true;
-        return [
-          ...acc,
-          ...value.reduce((valueAcc, maybeLazyValueMember) => {
-            const valueMember = this[MEMBERS.EXTRACT_LAZY_VALUE](
-              maybeLazyValueMember
-            );
-            if (valueMember instanceof SQLQuery) {
-              isPreviousQuery = true;
-              return [...valueAcc, ...valueMember.values];
-            } else if (!isPreviousQuery) {
-              return [
-                ...valueAcc.slice(0, -1),
-                [...valueAcc[valueAcc.length - 1], valueMember],
-              ];
-            } else {
-              isPreviousQuery = false;
-              return [...valueAcc, [valueMember]];
-            }
-          }, EMPTY_ARRAY),
-        ];
-      } else {
-        return [...acc, value];
-      }
-    }, EMPTY_ARRAY);
-  }
-
-  /**
-   * @function
-   * Constructs string which contains template arg with given index.
-   * @param {symbol} templateArg
-   * @param {number} index
-   * @returns {string}
-   */
-  [MEMBERS.BUILD_TEMPLATE](templateArg, index) {
-    if (index > 0)
-      switch (templateArg) {
-        case TEMPLATE_ARGS.DOLLAR:
-          return `$${index}`;
-        case TEMPLATE_ARGS.QUESTION:
-          return "?";
-        default:
-          throw new Error(`No such template arg: ${templateArg}`);
-      }
-    else
-      throw new Error(
-        `Template arg index can't be less than 1, received: ${index}.`
-      );
-  }
-
-  /**
-   * @function
-   * Returns query text statement with template args.
-   * @param {Array<string>} queryPart
-   * @param {Array<*>} values
-   * @param {symbol} templateArg
-   * @param {?number} argIndex
-   * @returns {string}
-   */
-  [MEMBERS.GET_TEXT](queryParts, values, templateArg, argIndex = 1) {
-    return queryParts.reduce((acc, queryPart, index) => {
-      const value = this[MEMBERS.EXTRACT_LAZY_VALUE](values[index]);
-      const nestedQueries = this[MEMBERS.USE_VALUE_OR_THIS](value)[
-        MEMBERS.GET_QUERIES_FROM_VALUE
-      ](value);
-      if (nestedQueries.length) {
-        return `${acc}${queryPart}${nestedQueries
-          .map(({ query, prev }, index) => {
-            const delimiter =
-              prev !== null && prev === nestedQueries[index - 1]
-                ? this[MEMBERS.DELIMITER]
-                : EMPTY_STRING;
-            const res = `${delimiter}${query[MEMBERS.GET_TEXT](
-              query[MEMBERS.QUERIES],
-              query[MEMBERS.VALUES],
-              templateArg,
-              argIndex
-            )}`;
-            
-            argIndex += query.values.length;
-            return res;
-          })
-          .join(EMPTY_STRING)}`;
-      } else if (typeof value !== "undefined") {
-        return `${acc}${queryPart}${this[MEMBERS.BUILD_TEMPLATE](
-          templateArg,
-          argIndex++
-        )}`;
-      } else {
-        return `${acc}${queryPart}`;
-      }
-    }, EMPTY_STRING);
-  }
-
-  /**
-   * Sets joiner of top-level statements.
-   * @param {string} delimiter - String to be used to join top-level statements.
-   * @returns {SQLQuery}
-   */
-  joinBy(delimiter) {
-    if (typeof delimiter === "string") {
-      this[MEMBERS.DELIMITER] = delimiter;
-      return this;
-    } else {
-      throw new TypeError(
-        `SQLQuery delimiter should be string, received: ${delimiter} with type ${typeof delimiter}.`
-      );
-    }
-  }
-
-  /**
-   * Sets name of prepared statement.
-   * @param {string} name - Name of statement.
-   * @returns {SQLQuery}
-   */
-  setName(name) {
-    if (typeof name === "string") {
-      this[MEMBERS.NAME] = name;
-      return this;
-    } else {
-      throw new TypeError(
-        `SQLQuery name should be string, received: ${name} with type ${typeof name}`
-      );
-    }
-  }
-
   /**
    * Constructs new SQLQuery using given query parts, values and delimiter.
    * @constructor
@@ -249,7 +61,8 @@ class SQLQuery {
   constructor(
     queryParts = EMPTY_ARRAY,
     values = EMPTY_ARRAY,
-    delimiter = EMPTY_STRING
+    delimiter = "",
+    name = void 0
   ) {
     if (!Array.isArray(queryParts)) {
       throw new TypeError(
@@ -267,19 +80,71 @@ class SQLQuery {
       this[MEMBERS.QUERIES] = queryParts;
       this[MEMBERS.VALUES] = values;
       this[MEMBERS.DELIMITER] = delimiter;
+      this[MEMBERS.NAME] = name;
+      [
+        MEMBERS.GET_QUERY_VALUES,
+        MEMBERS.GET_QUERY_STATEMENTS,
+        MEMBERS.GET_TEXT,
+        MEMBERS.GET_SQL,
+      ].forEach((key) => void (this[key] = cacheLast(this[key])));
     }
   }
 
   /**
-   * Constructs query statement with $ template args to be used by PostgreSQL.
+   * Sets joiner of top-level statements.
+   * @param {string} delimiter - String to be used to join top-level statements.
+   * @returns {SQLQuery}
+   */
+  joinBy(delimiter) {
+    if (typeof delimiter === "string") {
+      if (delimiter !== this[MEMBERS.DELIMITER]) {
+        return new SQLQuery(
+          this[MEMBERS.QUERIES],
+          this[MEMBERS.VALUES],
+          delimiter,
+          this[MEMBERS.NAME]
+        );
+      } else {
+        return this;
+      }
+    } else {
+      throw new TypeError(
+        `SQLQuery delimiter should be string, received: ${delimiter} with type ${typeof delimiter}.`
+      );
+    }
+  }
+
+  /**
+   * Sets name of prepared statement.
+   * @param {string} name - Name of statement.
+   * @returns {SQLQuery}
+   */
+  setName(name) {
+    if (typeof name === "string") {
+      if (name !== this[MEMBERS.NAME]) {
+        return new SQLQuery(
+          this[MEMBERS.QUERIES],
+          this[MEMBERS.VALUES],
+          this[MEMBERS.DELIMITER],
+          name
+        );
+      } else {
+        return this;
+      }
+      return this;
+    } else {
+      throw new TypeError(
+        `SQLQuery name should be string, received: ${name} with type ${typeof name}`
+      );
+    }
+  }
+
+  /**
+   * Returns query statement text for PostgreSQL.
    * @returns {string}
    */
   get text() {
-    return this[MEMBERS.GET_TEXT](
-      this[MEMBERS.QUERIES],
-      this[MEMBERS.VALUES],
-      TEMPLATE_ARGS.DOLLAR
-    ).replace(NEW_LINE_REGEXP, EMPTY_STRING);
+    return this[MEMBERS.GET_TEXT](this[MEMBERS.DELIMITER]);
   }
 
   /**
@@ -287,7 +152,7 @@ class SQLQuery {
    * @returns {Array<*>}
    */
   get values() {
-    return this[MEMBERS.GET_VALUES](this[MEMBERS.VALUES]);
+    return this[MEMBERS.GET_QUERY_VALUES](this[MEMBERS.VALUES]);
   }
 
   /**
@@ -306,23 +171,191 @@ class SQLQuery {
   toString() {
     return this.text;
   }
+
+  /**
+   * @function
+   * Calls value with `this` if value is of type {function}.
+   * @param {*} value
+   * @returns {*}
+   */
+  [MEMBERS.EXTRACT_LAZY_VALUE](value) {
+    if (typeof value === "function") return value(this);
+    else return value;
+  }
+
+  /**
+   * @function
+   * Returns all values provided for given query.
+   * @param {Array<*>} values
+   * @returns {Array<*>}
+   */
+  [MEMBERS.GET_QUERY_VALUES](values) {
+    return values.reduce((acc, maybeLazyValue) => {
+      const value = this[MEMBERS.EXTRACT_LAZY_VALUE](maybeLazyValue);
+      if (value instanceof SQLQuery) {
+        acc = [...acc, ...value.values];
+      } else {
+        acc.push(value);
+      }
+
+      return acc;
+    }, []);
+  }
+
+  /**
+   * @function
+   * Constructs string which contains template arg with given index.
+   * @param {symbol} templateArg
+   * @param {?number} index
+   * @returns {string}
+   */
+  [MEMBERS.BUILD_TEMPLATE](templateArg, index = 1) {
+    if (index > 0)
+      switch (templateArg) {
+        case TEMPLATE_ARGS.DOLLAR:
+          return `$${index}`;
+        case TEMPLATE_ARGS.QUESTION:
+          return "?";
+        default:
+          throw new Error(`No such template arg: ${templateArg}`);
+      }
+    else
+      throw new Error(
+        `Template arg index can't be less than 1, received: ${index}.`
+      );
+  }
+
+  /**
+   * @function
+   * Returns query statements with template args.
+   * @param {Array<string>} queryPart
+   * @param {Array<SQLQuery|*>} values
+   * @param {?string} delimiter
+   * @returns {Array<string|TEMPLATE_ARG>}
+   */
+  [MEMBERS.GET_QUERY_STATEMENTS](queryParts, values, delimiter) {
+    let statements = [];
+    const length = Math.max(queryParts.length, values.length);
+
+    for (let idx = 0, prevIsQuery = false; idx < length; ++idx) {
+      if (idx < queryParts.length) {
+        const queryPart = queryParts[idx];
+
+        if (queryPart) {
+          statements.push(queryPart);
+        }
+      }
+
+      if (idx < values.length) {
+        const value = this[MEMBERS.EXTRACT_LAZY_VALUE](values[idx]);
+        const isQuery = value instanceof SQLQuery;
+
+        if (
+          (idx > queryParts.length || (isQuery && prevIsQuery)) &&
+          delimiter
+        ) {
+          statements.push(delimiter);
+        }
+
+        if (isQuery) {
+          statements = [
+            ...statements,
+            ...value[MEMBERS.GET_QUERY_STATEMENTS](
+              value[MEMBERS.QUERIES],
+              value[MEMBERS.VALUES],
+              value[MEMBERS.DELIMITER]
+            ),
+          ];
+        } else {
+          statements.push(TEMPLATE_ARG);
+        }
+        prevIsQuery = isQuery;
+      }
+    }
+
+    return statements;
+  }
+
+  /**
+   * Returns query statement text for PostgreSQL.
+   * @function
+   * @param {?string} delimiter
+   * @returns {string}
+   */
+  [MEMBERS.GET_TEXT](delimiter) {
+    let lastIdx = 0;
+    return this[MEMBERS.GET_QUERY_STATEMENTS](
+      this[MEMBERS.QUERIES],
+      this[MEMBERS.VALUES],
+      delimiter
+    )
+      .map((val) =>
+        val === TEMPLATE_ARG
+          ? this[MEMBERS.BUILD_TEMPLATE](TEMPLATE_ARGS.DOLLAR, ++lastIdx)
+          : val
+      )
+      .join("")
+      .replace(NEW_LINE_REGEXP, "");
+  }
+
+  /**
+   * Returns query statement text for MySQL.
+   * @function
+   * @param {?string} delimiter
+   * @returns {string}
+   */
+  [MEMBERS.GET_SQL](delimiter) {
+    return this[MEMBERS.GET_QUERY_STATEMENTS](
+      this[MEMBERS.QUERIES],
+      this[MEMBERS.VALUES],
+      delimiter
+    )
+      .map((val) =>
+        val === TEMPLATE_ARG
+          ? this[MEMBERS.BUILD_TEMPLATE](TEMPLATE_ARGS.QUESTION)
+          : val
+      )
+      .join("")
+      .replace(NEW_LINE_REGEXP, "");
+  }
 }
 
 /**
  * @function
- * Generates query statement for MySQL.
+ * Returns query statement text for MySQL.
  * @returns {string}
  */
 Object.defineProperty(SQLQuery.prototype, "sql", {
   enumerable: true,
   get() {
-    return this[MEMBERS.GET_TEXT](
-      this[MEMBERS.QUERIES],
-      this[MEMBERS.VALUES],
-      TEMPLATE_ARGS.QUESTION
-    ).replace(NEW_LINE_REGEXP, EMPTY_STRING);
+    return this[MEMBERS.GET_SQL](this[MEMBERS.DELIMITER]);
   },
 });
+
+/**
+ * Caches last function result and returns it if function called with the same args again.
+ * @param {Function}
+ * @returns {Function}
+ */
+const cacheLast = (fn) => {
+  let lastArgs, val;
+  return function cached() {
+    if (lastArgs !== void 0) {
+      let same = true;
+      const length = Math.max(lastArgs.length, arguments.length);
+      for (let i = 0; i < length && same; ++i) {
+        same &= lastArgs[i] === arguments[i];
+      }
+
+      if (same) {
+        return val;
+      }
+    }
+    lastArgs = arguments;
+
+    return (val = fn.apply(this, arguments));
+  };
+};
 
 const { hasOwnProperty } = Object.prototype;
 
@@ -343,10 +376,7 @@ function createSQLTemplateQuery(...params) {
        */
       return new SQLQuery(firstParam, params.slice(1));
     }
-  return new SQLQuery(
-    Array.from(params, (_, i) => (i ? "," : EMPTY_STRING)),
-    params
-  );
+  return new SQLQuery(EMPTY_ARRAY, params, ",");
 }
 
 module.exports = createSQLTemplateQuery;

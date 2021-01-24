@@ -131,7 +131,6 @@ class SQLQuery {
       } else {
         return this;
       }
-      return this;
     } else {
       throw new TypeError(
         `SQLQuery name should be string, received: ${name} with type ${typeof name}`

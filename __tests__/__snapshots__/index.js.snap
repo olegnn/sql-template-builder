@@ -192,6 +192,51 @@ Array [
 
 exports[`sql-query creates nested query using rest parameters 4`] = `undefined`;
 
+exports[`sql-query creates nested query with customly joined statements 1`] = `"WITH a+b+c+d as A, a-b-c-d as B and WITH a+b+c+d as A, a-b-c-d as B and WITH a+b+c+d as A, a-b-c-d as B"`;
+
+exports[`sql-query creates nested query with customly joined statements 2`] = `"WITH a+b+c+d as A, a-b-c-d as B and WITH a+b+c+d as A, a-b-c-d as B and WITH a+b+c+d as A, a-b-c-d as B"`;
+
+exports[`sql-query creates nested query with customly joined statements 3`] = `Array []`;
+
+exports[`sql-query creates nested query with customly joined statements 4`] = `undefined`;
+
+exports[`sql-query creates nested query with customly joined statements 5`] = `"WITH a+$1+with $2,$3+c+$4 as A, a-$5-with $6,$7-c-$8 as B and next and $9 and WITH a+$10+with $11,$12+c+$13 as A, a-$14-with $15,$16-c-$17 as B and next and $18 and WITH a+$19+with $20,$21+c+$22 as A, a-$23-with $24,$25-c-$26 as B"`;
+
+exports[`sql-query creates nested query with customly joined statements 6`] = `"WITH a+?+with ?,?+c+? as A, a-?-with ?,?-c-? as B and next and ? and WITH a+?+with ?,?+c+? as A, a-?-with ?,?-c-? as B and next and ? and WITH a+?+with ?,?+c+? as A, a-?-with ?,?-c-? as B"`;
+
+exports[`sql-query creates nested query with customly joined statements 7`] = `
+Array [
+  1,
+  99,
+  "Hello",
+  2,
+  1,
+  99,
+  "Hello",
+  2,
+  2,
+  1,
+  99,
+  "Hello",
+  2,
+  1,
+  99,
+  "Hello",
+  2,
+  4,
+  1,
+  99,
+  "Hello",
+  2,
+  1,
+  99,
+  "Hello",
+  2,
+]
+`;
+
+exports[`sql-query creates nested query with customly joined statements 8`] = `undefined`;
+
 exports[`sql-query creates query with statements joined by "+" 1`] = `"a+b+c+d"`;
 
 exports[`sql-query creates query with statements joined by "+" 2`] = `"a+b+c+d"`;
@@ -244,7 +289,7 @@ exports[`sql-query creates statement using lazy evaluated queries and checks cou
 
 exports[`sql-query imports modules 1`] = `
 SQLQuery {
-  Symbol(sql-template-builder/QUERIES): Array [],
+  Symbol(sql-template-builder/QUERY_PARTS): Array [],
   Symbol(sql-template-builder/VALUES): Array [],
   Symbol(sql-template-builder/DELIMITER): "",
   Symbol(sql-template-builder/NAME): undefined,
@@ -257,7 +302,7 @@ SQLQuery {
 
 exports[`sql-query imports modules 2`] = `
 SQLQuery {
-  Symbol(sql-template-builder/QUERIES): Array [
+  Symbol(sql-template-builder/QUERY_PARTS): Array [
     "SELECT * FROM table",
   ],
   Symbol(sql-template-builder/VALUES): Array [],

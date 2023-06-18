@@ -28,9 +28,6 @@
     "test": "jest ./__tests__/*",
     "prepublish": "yarn test"
   },
-  "dependencies": {
-    "es6-symbol": "^3.1.3"
-  },
   "jest": {
     "coverageDirectory": "./coverage/",
     "collectCoverage": true

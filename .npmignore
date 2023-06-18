@@ -8,3 +8,4 @@ yarn.lock
 coverage
 node_modules
 codecov.yml
+.github

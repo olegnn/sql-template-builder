@@ -6,8 +6,6 @@
  *
  */
 
-const Symbol = require("es6-symbol");
-
 /**
  * @enum {symbol}
  * `SQLQuery` members. For internal usage.
@@ -48,11 +46,11 @@ const NEW_LINE_REGEXP = /\n/g;
 
 /**
  * @class
- * Describes sql query statement(s) with values.
+ * Describes SQL query statement(s) with values.
  */
 class SQLQuery {
   /**
-   * Constructs new `SQLQuery` using given query parts, values and delimiter.
+   * Constructs new `SQLQuery` using supplied query parts, values, delimiter and name.
    * @constructor
    * @param {?Array<string>} queryParts - An array of the query parts.
    * @param {?Array<*>} values - An array of the query values.

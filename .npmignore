@@ -1,5 +1,4 @@
 .travis.yml
-__tests__
 examples
 .DS_Store
 .eslintrc

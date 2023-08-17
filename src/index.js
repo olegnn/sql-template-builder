@@ -41,8 +41,16 @@ const TEMPLATE_ARGS = {
 };
 
 const TEMPLATE_ARG = Symbol("sql-template-builder/TEMPLATE_ARG");
+const NO_VALUE = Symbol("sql-template-builder/NO_VALUE");
+
 const EMPTY_ARRAY = [];
 const NEW_LINE_REGEXP = /\n/g;
+const CACHED_MEMBERS = [
+  MEMBERS.GET_QUERY_VALUES,
+  MEMBERS.GET_QUERY_STATEMENTS,
+  MEMBERS.GET_TEXT,
+  MEMBERS.GET_SQL,
+];
 
 /**
  * @class
@@ -55,6 +63,7 @@ class SQLQuery {
    * @param {?Array<string>} queryParts - An array of the query parts.
    * @param {?Array<*>} values - An array of the query values.
    * @param {?string} delimiter - String to join top-level statements.
+   * @param {*?} name - Name to be used for this query.
    * @returns {SQLQuery}
    */
   constructor(
@@ -80,12 +89,10 @@ class SQLQuery {
       this[MEMBERS.VALUES] = values;
       this[MEMBERS.DELIMITER] = delimiter;
       this[MEMBERS.NAME] = name;
-      [
-        MEMBERS.GET_QUERY_VALUES,
-        MEMBERS.GET_QUERY_STATEMENTS,
-        MEMBERS.GET_TEXT,
-        MEMBERS.GET_SQL,
-      ].forEach((key) => void (this[key] = cacheLast(this[key])));
+
+      CACHED_MEMBERS.forEach((key) => {
+        this[key] = cacheLast(this[key]);
+      });
     }
   }
 
@@ -325,7 +332,6 @@ Object.defineProperty(SQLQuery.prototype, "sql", {
  * @returns {function(): T}
  */
 const cacheLast = (fn) => {
-  const NO_VALUE = {};
   let lastVal = NO_VALUE;
 
   return function cached() {

@@ -26,15 +26,15 @@ npm i --save sql-template-builder
 
 ## API and usage
 
-- **sql\`Statements go here = ${`value go here`}\`** - create SQLQuery
+- **sql\`Statements go here = ${`value goes here`}\`** - create SQLQuery
 - **sql(sql`query`, 'value', 'other value', sql`other query`...)** - create SQLQuery statement from other queries/values joined by ','
-- **sql(...).joinBy(string)** - create SQLQuery as statement joined from passed queries/values with `.joinBy` argument as delimiter
+- **sql(...).joinBy(string)** - create SQLQuery as a statement joined from passed queries/values with `.joinBy` argument as the delimiter
 - **sql.raw(string)** - create SQLQuery statement from raw value. **Be careful!**
-- query.joinBy(string) - create SQLQuery with given string to be used to join top-level statements
-- query.setName(string) - create SQLQuery with given name set as prepared statement name (for pg)
-- query.text - get template text for pg query
-- query.sql - get template text for sql query
-- query.values - get values for query
+- query.joinBy(string) - create SQLQuery with the given string to be used to join the top-level statements
+- query.setName(string) - create SQLQuery with the given name set as the prepared statement name (for Postgres)
+- query.text - get template text for the Postgres query
+- query.sql - get template text for the SQL query
+- query.values - get values for the query
 
 ```javascript
 const sql = require("sql-template-builder");

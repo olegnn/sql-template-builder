@@ -315,6 +315,96 @@ SQLQuery {
 }
 `;
 
+exports[`sql-query mixes queries and values 1`] = `"$1,query nested query nested nested query = $2, f = $3,$4,other query"`;
+
+exports[`sql-query mixes queries and values 2`] = `"?,query nested query nested nested query = ?, f = ?,?,other query"`;
+
+exports[`sql-query mixes queries and values 3`] = `
+[
+  "value",
+  1,
+  "fn data",
+  "other value",
+]
+`;
+
+exports[`sql-query mixes queries and values 4`] = `undefined`;
+
+exports[`sql-query mixes queries and values 5`] = `"$1|query nested query nested nested query = $2, f = $3|$4|other query"`;
+
+exports[`sql-query mixes queries and values 6`] = `"?|query nested query nested nested query = ?, f = ?|?|other query"`;
+
+exports[`sql-query mixes queries and values 7`] = `
+[
+  "value",
+  1,
+  "fn data",
+  "other value",
+]
+`;
+
+exports[`sql-query mixes queries and values 8`] = `undefined`;
+
+exports[`sql-query mixes queries and values 9`] = `"$1,query nested query nested nested query = $2, f = $3,$4,other query"`;
+
+exports[`sql-query mixes queries and values 10`] = `"?,query nested query nested nested query = ?, f = ?,?,other query"`;
+
+exports[`sql-query mixes queries and values 11`] = `
+[
+  "value",
+  1,
+  "fn data",
+  "other value",
+]
+`;
+
+exports[`sql-query mixes queries and values 12`] = `undefined`;
+
+exports[`sql-query mixes queries and values 13`] = `"$1|query nested query nested nested query = $2, f = $3|$4|other query"`;
+
+exports[`sql-query mixes queries and values 14`] = `"?|query nested query nested nested query = ?, f = ?|?|other query"`;
+
+exports[`sql-query mixes queries and values 15`] = `
+[
+  "value",
+  1,
+  "fn data",
+  "other value",
+]
+`;
+
+exports[`sql-query mixes queries and values 16`] = `undefined`;
+
+exports[`sql-query mixes queries and values 17`] = `"$1,query nested query nested nested query = $2, f = $3,$4,other query"`;
+
+exports[`sql-query mixes queries and values 18`] = `"?,query nested query nested nested query = ?, f = ?,?,other query"`;
+
+exports[`sql-query mixes queries and values 19`] = `
+[
+  "value",
+  1,
+  "fn data",
+  "other value",
+]
+`;
+
+exports[`sql-query mixes queries and values 20`] = `undefined`;
+
+exports[`sql-query mixes queries and values 21`] = `"$1|query nested query nested nested query = $2, f = $3|$4|other query"`;
+
+exports[`sql-query mixes queries and values 22`] = `"?|query nested query nested nested query = ?, f = ?|?|other query"`;
+
+exports[`sql-query mixes queries and values 23`] = `
+[
+  "value",
+  1,
+  "fn data",
+  "other value",
+]
+`;
+
+exports[`sql-query mixes queries and values 24`] = `undefined`;
+
 exports[`sql-query uses lazy evaluated statements 1`] = `"SELECT * FROM people WHERE name = $1"`;
 
 exports[`sql-query uses lazy evaluated statements 2`] = `"SELECT * FROM people WHERE name = ?"`;

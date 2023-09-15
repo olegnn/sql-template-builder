@@ -26,12 +26,12 @@ npm i --save sql-template-builder
 
 ## API and usage
 
-- **sql\`Statements go here = ${`value goes here`}\`** - create SQLQuery
-- **sql(sql`query`, 'value', 'other value', sql`other query`...)** - create SQLQuery statement from other queries/values joined by ','
-- **sql(...).joinBy(string)** - create SQLQuery as a statement joined from passed queries/values with `.joinBy` argument as the delimiter
-- **sql.raw(string)** - create SQLQuery statement from raw value. **Be careful!**
-- query.joinBy(string) - create SQLQuery with the given string to be used to join the top-level statements
-- query.setName(string) - create SQLQuery with the given name set as the prepared statement name (for Postgres)
+- **sql\`Statements go here = ${\`value goes here\`}\`** - create a new `SQLQuery`
+- **sql(sql\`query\`, 'value', 'other value', sql\`other query\`, ...)** - create a new `SQLQuery` from queries/values joined by `','`
+- **sql(...).joinBy(string)** - create a new `SQLQuery` as a statement joined from the underlying queries/values with `.joinBy` argument as the delimiter
+- **sql.raw(string)** - create a new `SQLQuery` statement from raw value. **Be careful!**
+- query.joinBy(string) - create a new `SQLQuery` with the given string to be used to join the top-level statements
+- query.setName(string) - create a new `SQLQuery` with the given name set as the prepared statement name (for Postgres)
 - query.text - get template text for the Postgres query
 - query.sql - get template text for the SQL query
 - query.values - get values for the query
@@ -48,9 +48,10 @@ const conditions = [sql`a = ${1}`, sql`c = ${2}`, sql`e = ${3}`];
 
 const conditionQuery = sql(conditions).joinBy(" AND "); // It will join all statements by ' AND '
 
-const prepared = sql`SELECT * FROM ${tableName} LEFT OUTER JOIN ${rawTableName} ON(${conditionQuery})`.setName(
-  "my_statement"
-);
+const prepared =
+  sql`SELECT * FROM ${tableName} LEFT OUTER JOIN ${rawTableName} ON(${conditionQuery})`.setName(
+    "my_statement"
+  );
 // text: SELECT * FROM my_table LEFT OUTER JOIN my_table_1 ON(a = $1 AND c = $2 AND e = $3)
 // sql: SELECT * FROM my_table LEFT OUTER JOIN my_table_1 ON(a = ? AND c = ? AND e = ?)
 // values: [ 1, 2, 3 ]
@@ -105,12 +106,12 @@ const createTableQuery = sql`
 const data = [
   ["Peter", "25"],
   ["Wendy", "24"],
-  ["Andrew", "32"]
+  ["Andrew", "32"],
 ];
 
 const insertStatement = sql`
   INSERT INTO ${tableName} VALUES ${sql(
-  ...data.map(row => sql`(${sql(...row)})`)
+  ...data.map((row) => sql`(${sql(...row)})`)
 )}
 `;
 // => text: INSERT INTO people VALUES ($1,$2),($3,$4),($5,$6)
@@ -118,7 +119,7 @@ const insertStatement = sql`
 // => values: [ 'Peter', '25', 'Wendy', '24', 'Andrew', '32' ]
 
 // Lazy evaluated :)
-const getNameCondition = query => {
+const getNameCondition = (query) => {
   switch (query) {
     case firstQuery:
       return "Andrew";
@@ -152,7 +153,7 @@ const superComplexQuery = sql`
   WITH q1 as(${complexQuery}), q2 as (${complexQuery}), q3 as (${complexQuery}) select 1
 `;
 
-const makeQuery = query => async () =>
+const makeQuery = (query) => async () =>
   void console.log(await pool.query(query));
 
 makeQuery(createTableQuery)()

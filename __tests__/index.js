@@ -162,6 +162,23 @@ describe("sql-query", () => {
     testQuery(sql`INSERT INTO randoms VALUES (${sql(...data)})`);
   });
 
+  it("mixes queries and values", () => {
+    const data = jest.fn(() => 'fn data');
+
+    const query = sql(
+      "value",
+      sql`query ${sql`nested query ${sql`nested nested query = ${1}, f = ${data}`}`}`,
+      "other value",
+      sql`other query`
+    );
+
+    for (let i = 0; i < 3; i++) {
+      testQuery(query);
+      testQuery(query.joinBy('|'));
+    }
+    expect(data).toBeCalledTimes(2);
+  });
+
   it("creates statement using lazy evaluated queries and checks count of fn calls", () => {
     const relation = jest.fn();
     const data = jest.fn();

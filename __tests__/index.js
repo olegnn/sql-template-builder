@@ -123,6 +123,13 @@ describe("sql-query", () => {
     testQuery(rootStatement);
   });
 
+  it("joins queries and values properly", () => {
+    testQuery(
+      sql(sql`Hello there`, "my friend", sql`how are you?`).joinBy(" ")
+    );
+    testQuery(sql(1, sql`2`, 3).joinBy("+"));
+  });
+
   it("creates nested query with customly joined statements", () => {
     const statements = [sql`a`, 1, sql`with ${sql(99, "Hello")}`, sql`c`, 2];
     const statement = sql`WITH ${sql(...statements).joinBy("+")} as A, ${sql(
@@ -163,7 +170,7 @@ describe("sql-query", () => {
   });
 
   it("mixes queries and values", () => {
-    const data = jest.fn(() => 'fn data');
+    const data = jest.fn(() => "fn data");
 
     const query = sql(
       "value",
@@ -174,7 +181,7 @@ describe("sql-query", () => {
 
     for (let i = 0; i < 3; i++) {
       testQuery(query);
-      testQuery(query.joinBy('|'));
+      testQuery(query.joinBy("|"));
     }
     expect(data).toBeCalledTimes(2);
   });

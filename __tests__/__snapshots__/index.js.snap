@@ -315,6 +315,31 @@ SQLQuery {
 }
 `;
 
+exports[`sql-query joins queries and values properly 1`] = `"Hello there $1 how are you?"`;
+
+exports[`sql-query joins queries and values properly 2`] = `"Hello there ? how are you?"`;
+
+exports[`sql-query joins queries and values properly 3`] = `
+[
+  "my friend",
+]
+`;
+
+exports[`sql-query joins queries and values properly 4`] = `undefined`;
+
+exports[`sql-query joins queries and values properly 5`] = `"$1+2+$2"`;
+
+exports[`sql-query joins queries and values properly 6`] = `"?+2+?"`;
+
+exports[`sql-query joins queries and values properly 7`] = `
+[
+  1,
+  3,
+]
+`;
+
+exports[`sql-query joins queries and values properly 8`] = `undefined`;
+
 exports[`sql-query mixes queries and values 1`] = `"$1,query nested query nested nested query = $2, f = $3,$4,other query"`;
 
 exports[`sql-query mixes queries and values 2`] = `"?,query nested query nested nested query = ?, f = ?,?,other query"`;

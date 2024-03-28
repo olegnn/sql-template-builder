@@ -28,7 +28,7 @@ npm i --save sql-template-builder
 
 - **sql\`Statements go here = ${\`value goes here\`}\`** - create a new `SQLQuery`
 - **sql(sql\`query\`, 'value', 'other value', sql\`other query\`, ...)** - create a new `SQLQuery` from queries/values joined by `','`
-- **sql(...).joinBy(string)** - create a new `SQLQuery` as a statement joined from the underlying queries/values with `.joinBy` argument as the delimiter
+- **sql(sql\`query\`, 'value', sql\`other query\`).joinBy(string)** - create a new `SQLQuery` as a statement joined from the underlying queries/values with `.joinBy` argument as the delimiter
 - **sql.raw(string)** - create a new `SQLQuery` statement from raw value. **Be careful!**
 - query.joinBy(string) - create a new `SQLQuery` with the given string to be used to join the top-level statements
 - query.setName(string) - create a new `SQLQuery` with the given name set as the prepared statement name (for Postgres)
@@ -46,7 +46,7 @@ const rawTableName = sql.raw("my_table_1");
 
 const conditions = [sql`a = ${1}`, sql`c = ${2}`, sql`e = ${3}`];
 
-const conditionQuery = sql(conditions).joinBy(" AND "); // It will join all statements by ' AND '
+const conditionQuery = sql(...conditions).joinBy(" AND "); // It will join all statements by ' AND '
 
 const prepared =
   sql`SELECT * FROM ${tableName} LEFT OUTER JOIN ${rawTableName} ON(${conditionQuery})`.setName(
